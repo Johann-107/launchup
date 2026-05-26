@@ -73,10 +73,10 @@
   }}
 >
   <Card.Root
-    class="bg-background hover:bg-accent h-44 cursor-pointer rounded-xl border  p-0 transition-colors duration-150"
+    class="h-44 cursor-pointer rounded-[1.5rem] border border-white/40 bg-white/60 p-0 shadow-[0_4px_24px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
   >
     <Card.Content class="h-full">
-      <div class="flex h-full flex-col justify-between p-3">
+      <div class="flex h-full flex-col justify-between p-4">
         <div class="mb-1 flex w-full items-center gap-3">
           <div
             class="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-lg text-base font-bold"

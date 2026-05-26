@@ -62,14 +62,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     };
 
     if (isPublicOnlyRoute) {
-      if (isAdminLogin) {
-        // If already logged and role qualifies, go to admin; else redirect to startups
-        if (
-          event.locals.user.role === 'Admin'
-        ) {
-          throw redirect(302, '/admin');
-        }
-        throw redirect(302, '/startups');
+      if (event.locals.user.role === 'Admin') {
+        throw redirect(302, '/admin');
       }
       throw redirect(302, '/startups');
     }

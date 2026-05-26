@@ -69,6 +69,7 @@ export class StartupService {
           { mentors: { id: userId } },
           { populate: ['mentors', 'capsuleProposal'] },
         );
+      case Role.Admin:
       case Role.Manager:
         return await this.em.findAll(Startup, {
           populate: ['user', 'mentors', 'members', 'capsuleProposal'],

@@ -144,11 +144,9 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  if (!process.env.DB_HOST) {
-    const orm = app.get(MikroORM);
-    await orm.getSchemaGenerator().createSchema();
-    await seedLocalDemoData(orm);
-  }
+  const orm = app.get(MikroORM);
+  await orm.getSchemaGenerator().updateSchema();
+  await seedLocalDemoData(orm);
 
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
