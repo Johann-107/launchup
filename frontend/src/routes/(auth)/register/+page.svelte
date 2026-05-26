@@ -60,36 +60,36 @@
 </svelte:head>
 
 <div class="grid h-screen overflow-hidden lg:grid-cols-[0.96fr_1.04fr]">
-  <div class="relative hidden overflow-hidden bg-slate-950 lg:flex lg:flex-col">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.22),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.24),transparent_30%)]"></div>
-    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_38%,rgba(255,255,255,0.03))]"></div>
-    <div class="relative z-10 flex items-center justify-between px-10 py-8 text-white/90">
-      <a href="/" class="text-xl font-black tracking-tight">LaunchUp</a>
-      <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium backdrop-blur">
+  <div class="relative hidden overflow-hidden bg-slate-50 dark:bg-slate-950 lg:flex lg:flex-col">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.06),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.08),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.22),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.24),transparent_30%)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(0,0,0,0.02),transparent_38%,rgba(0,0,0,0.01))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_38%,rgba(255,255,255,0.03))]"></div>
+    <div class="relative z-10 flex items-center justify-between px-10 py-8 text-slate-900 dark:text-white/90">
+      <a href="/" class="text-xl font-black tracking-tight text-slate-950 dark:text-white">LaunchUp</a>
+      <div class="rounded-full border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/90">
         Build a stronger first signal
       </div>
     </div>
     <div class="relative z-10 flex flex-1 items-center px-10 pb-8">
-      <div class="max-w-xl space-y-6 text-white">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Create your account</p>
-        <h1 class="text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl">
+      <div class="max-w-xl space-y-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/60">Create your account</p>
+        <h1 class="text-4xl font-black tracking-[-0.05em] text-slate-950 dark:text-white sm:text-5xl">
           A cleaner onboarding path starts here.
         </h1>
-        <p class="text-base leading-7 text-white/72 sm:text-lg sm:leading-8">
+        <p class="text-base leading-7 text-slate-600 dark:text-white/72 sm:text-lg sm:leading-8">
           The form is intentionally focused so startups can get in quickly, without feeling like they are battling the interface.
         </p>
         <div class="grid gap-4 pt-2 sm:grid-cols-3 sm:pt-4">
-          <div class="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-            <p class="text-sm text-white/55">Signup</p>
-            <p class="mt-2 text-lg font-semibold">Shorter path</p>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Signup</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Shorter path</p>
           </div>
-          <div class="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-            <p class="text-sm text-white/55">Password</p>
-            <p class="mt-2 text-lg font-semibold">Strength meter</p>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Password</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Strength meter</p>
           </div>
-          <div class="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-            <p class="text-sm text-white/55">Friction</p>
-            <p class="mt-2 text-lg font-semibold">Minimized</p>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Friction</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Minimized</p>
           </div>
         </div>
       </div>

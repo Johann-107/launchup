@@ -19,8 +19,10 @@
         Precision for founders who need clarity fast
       </div>
       <div class="space-y-5">
-        <p class="max-w-3xl text-6xl font-black tracking-[-0.05em] text-slate-950 sm:text-7xl lg:text-[5.5rem] dark:text-white">
-          A better way to launch, judge, and grow serious startups.
+        <p class="max-w-3xl text-6xl font-black tracking-[-0.05em] sm:text-7xl lg:text-[5.5rem]">
+          <span class="bg-gradient-to-br from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-transparent dark:from-white dark:via-slate-200 dark:to-slate-400">
+            A better way to launch, judge, and grow serious startups.
+          </span>
         </p>
         <p class="max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl dark:text-slate-300">
           LaunchUp gives founders a sharper application journey, a clearer readiness signal, and a calmer path from first impression to funding conversation.
@@ -28,7 +30,7 @@
       </div>
       <div class="flex flex-wrap items-center gap-4">
         <a data-sveltekit-reload href="/register">
-          <Button class="group h-12 rounded-full bg-slate-950 px-6 text-white shadow-[0_18px_40px_rgba(15,23,42,0.22)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200">
+          <Button class="group h-12 rounded-full bg-gradient-to-b from-slate-800 to-slate-950 px-6 text-white shadow-[0_8px_30px_rgba(15,23,42,0.25),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-slate-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.35)] dark:from-white dark:to-slate-200 dark:text-slate-950 dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)]">
             Get Started
             <ArrowRight class="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Button>
@@ -55,7 +57,8 @@
     <div class="relative flex items-center justify-center">
       <div class="absolute inset-0 -z-10 rounded-[2.5rem] bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.18),transparent_62%)] blur-3xl"></div>
       <div class="relative w-full max-w-[34rem] rounded-[2rem] border border-white/60 bg-white/75 p-6 shadow-[0_28px_70px_rgba(15,23,42,0.12)] backdrop-blur dark:border-white/10 dark:bg-slate-950/55">
-        <div class="absolute left-6 top-6 h-24 w-24 rounded-full bg-[#6366f1]/20 blur-2xl"></div>
+        <div class="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-[#6366f1]/30 blur-[2.5rem] mix-blend-multiply dark:mix-blend-screen"></div>
+        <div class="absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-[#0ea5e9]/30 blur-[2.5rem] mix-blend-multiply dark:mix-blend-screen"></div>
         <img src="/startup.svg" alt="startup" class="relative z-10 w-full animate-fade drop-shadow-[0_24px_50px_rgba(15,23,42,0.12)]" />
       </div>
     </div>

@@ -24,36 +24,36 @@
 </svelte:head>
 
 <div class="grid min-h-screen lg:grid-cols-[1.08fr_0.92fr]">
-  <div class="relative hidden overflow-hidden bg-slate-950 lg:flex lg:flex-col">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.2),transparent_30%)]"></div>
-    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%,rgba(255,255,255,0.03))]"></div>
-    <div class="relative z-10 flex items-center justify-between px-10 py-8 text-white/90">
-      <a href="/" class="text-xl font-black tracking-tight">LaunchUp</a>
-      <div class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium backdrop-blur">
+  <div class="relative hidden overflow-hidden bg-slate-50 dark:bg-slate-950 lg:flex lg:flex-col">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.06),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.2),transparent_30%)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(0,0,0,0.02),transparent_40%,rgba(0,0,0,0.01))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%,rgba(255,255,255,0.03))]"></div>
+    <div class="relative z-10 flex items-center justify-between px-10 py-8 text-slate-900 dark:text-white/90">
+      <a href="/" class="text-xl font-black tracking-tight text-slate-950 dark:text-white">LaunchUp</a>
+      <div class="rounded-full border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/90">
         Focused access for founders
       </div>
     </div>
     <div class="relative z-10 flex flex-1 items-center px-10 pb-10">
-      <div class="max-w-xl space-y-6 text-white">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Welcome back</p>
-        <h1 class="text-5xl font-black tracking-[-0.05em] text-white">
+      <div class="max-w-xl space-y-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/60">Welcome back</p>
+        <h1 class="text-5xl font-black tracking-[-0.05em] text-slate-950 dark:text-white">
           Sign in to resume your startup journey.
         </h1>
-        <p class="text-lg leading-8 text-white/72">
+        <p class="text-lg leading-8 text-slate-600 dark:text-white/72">
           Everything here is tuned for speed, clarity, and a cleaner signal when it matters most.
         </p>
         <div class="grid gap-4 pt-4 sm:grid-cols-3">
-          <div class="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-            <p class="text-sm text-white/55">Access</p>
-            <p class="mt-2 text-lg font-semibold">Fast login</p>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Access</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Fast login</p>
           </div>
-          <div class="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-            <p class="text-sm text-white/55">Signal</p>
-            <p class="mt-2 text-lg font-semibold">Clear status</p>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Signal</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Clear status</p>
           </div>
-          <div class="rounded-2xl border border-white/10 bg-white/8 p-4 backdrop-blur">
-            <p class="text-sm text-white/55">Flow</p>
-            <p class="mt-2 text-lg font-semibold">Less friction</p>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Flow</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Less friction</p>
           </div>
         </div>
       </div>
@@ -70,8 +70,9 @@
     <form
       method="post"
       use:enhance
-      class="w-full max-w-md rounded-[2rem] border border-slate-200/70 bg-white/85 p-8 shadow-[0_26px_80px_rgba(15,23,42,0.14)] backdrop-blur dark:border-white/10 dark:bg-slate-950/70 sm:p-10"
+      class="relative w-full max-w-md rounded-[2.5rem] border border-white/40 bg-white/60 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.06),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] sm:p-10"
     >
+      <div class="absolute -inset-0.5 -z-10 rounded-[2.5rem] bg-gradient-to-br from-[#6366f1]/20 via-transparent to-[#0ea5e9]/20 blur-xl dark:from-[#6366f1]/10 dark:to-[#0ea5e9]/10"></div>
       <div class="space-y-3 text-center">
         <p class="text-sm font-semibold uppercase tracking-[0.28em] text-[#6366f1]">Login</p>
         <h1 class="text-4xl font-black tracking-tight text-slate-950 dark:text-white">Welcome back</h1>
@@ -89,7 +90,7 @@
             placeholder="m@example.com"
             required
             bind:value={$form.email}
-            class="h-11 rounded-xl border-slate-200 bg-white/90 focus-visible:ring-2 focus-visible:ring-[#6366f1] focus-visible:ring-offset-0 focus-visible:shadow-[0_0_0_4px_rgba(99,102,241,0.18)] dark:border-white/10 dark:bg-white/5"
+            class="h-12 rounded-2xl border-white/50 bg-white/70 shadow-sm transition-all focus-visible:border-[#6366f1]/50 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-[#6366f1]/10 focus-visible:ring-offset-0 dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-[#6366f1]/50 dark:focus-visible:bg-white/10"
           />
         </div>
         <div class="grid gap-2.5">
@@ -100,7 +101,7 @@
             type="password"
             required
             bind:value={$form.password}
-            class="h-11 rounded-xl border-slate-200 bg-white/90 focus-visible:ring-2 focus-visible:ring-[#6366f1] focus-visible:ring-offset-0 focus-visible:shadow-[0_0_0_4px_rgba(99,102,241,0.18)] dark:border-white/10 dark:bg-white/5"
+            class="h-12 rounded-2xl border-white/50 bg-white/70 shadow-sm transition-all focus-visible:border-[#6366f1]/50 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-[#6366f1]/10 focus-visible:ring-offset-0 dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-[#6366f1]/50 dark:focus-visible:bg-white/10"
           />
         </div>
         {#if $errors.email}
@@ -108,13 +109,13 @@
         {/if}
         <Button
           type="submit"
-          class="h-12 w-full rounded-full bg-slate-950 text-white shadow-[0_18px_40px_rgba(15,23,42,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          class="group mt-2 h-12 w-full rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 px-6 text-base font-semibold text-white shadow-[0_8px_30px_rgba(15,23,42,0.25),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-slate-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.35)] dark:from-white dark:to-slate-200 dark:text-slate-950 dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
           disabled={$submitting}
         >
           {#if $submitting}
-            <Loader class="mr-2 h-4 w-4 animate-spin" />
+            <Loader class="mr-2 h-5 w-5 animate-spin" />
           {/if}
-          Login
+          Sign In
         </Button>
       </div>
       <div class="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">

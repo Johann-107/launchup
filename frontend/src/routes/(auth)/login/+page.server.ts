@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { dev } from '$app/environment';
 import { message, setError, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, redirect, isRedirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 
 const loginSchema = z.object({
@@ -59,6 +59,9 @@ export const actions = {
         return setError(form, 'email', 'Invalid Credentials');
       }
     } catch (error) {
+      if (isRedirect(error)) {
+        throw error;
+      }
       console.error(error);
       return fail(500, {
         form
