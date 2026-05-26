@@ -91,8 +91,10 @@
       <a
         data-sveltekit-preload-data="tap"
         href={`/${modules[0].link}`}
-        class="cursor-pointer text-xl font-black normal-case">LaunchUp</a
+        class="cursor-pointer text-xl font-black normal-case"
+        style="color: var(--primary);">LaunchUp</a
       >
+      <a class="ml-4 text-sm" href="/dashboard" style="color: var(--primary);">Dashboard</a>
     </div>
     <div class="flex h-1/3 items-center justify-center gap-5">
       <ul class="flex flex-1 cursor-pointer items-center gap-7 text-sm">

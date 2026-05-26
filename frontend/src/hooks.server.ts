@@ -41,7 +41,9 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
+    const secret = new TextEncoder().encode(
+      JWT_SECRET || 'launchup-dev-secret'
+    );
 
     const { payload } = await jwtVerify<{
       sub: string;

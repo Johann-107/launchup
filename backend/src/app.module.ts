@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { StartupModule } from './startup/startup.module';
 import { ReadinesslevelModule } from './readinesslevel/readinesslevel.module';
+import { ReadinessModule } from './readiness/readiness.module';
 import { AiModule } from './ai/ai.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ChatHistoryModule } from './chat_history/chat-history.module';
@@ -40,6 +41,7 @@ import { UploadModule } from './upload/upload.module';
     StartupModule,
     UserModule,
     ReadinesslevelModule,
+    ReadinessModule,
     RnaModule,
     RnsModule,
     InitiativeModule,

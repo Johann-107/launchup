@@ -59,5 +59,11 @@ export const actions = {
         access_token: data
       });
     }
+
+    return setError(
+      form,
+      'email',
+      data?.message ?? data?.error ?? 'Unable to create account'
+    );
   }
 };
