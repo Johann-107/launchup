@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   InternalServerErrorException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3 } from '@aws-sdk/client-s3';
@@ -17,31 +18,29 @@ export class UploadService {
   private s3: S3;
   private bucketName: string;
   private endpoint: string;
+  private enabled = false;   // <-- new flag
 
   constructor(private configService: ConfigService) {
     const accessKeyId = this.configService.get<string>('DO_SPACES_KEY');
     const secretAccessKey = this.configService.get<string>('DO_SPACES_SECRET');
-    this.endpoint = this.configService.get<string>('DO_SPACES_ENDPOINT')!;
-    this.bucketName = this.configService.get<string>('DO_SPACES_BUCKET')!;
+    const endpoint = this.configService.get<string>('DO_SPACES_ENDPOINT');
+    const bucketName = this.configService.get<string>('DO_SPACES_BUCKET');
     const region = this.configService.get<string>('DO_SPACES_REGION');
 
-    if (
-      !accessKeyId ||
-      !secretAccessKey ||
-      !this.endpoint ||
-      !this.bucketName ||
-      !region
-    ) {
-      throw new Error('Digital Ocean Spaces configuration is incomplete');
+    if (!accessKeyId || !secretAccessKey || !endpoint || !bucketName || !region) {
+      console.warn('⚠️  DigitalOcean Spaces not configured – file uploads will be disabled.');
+      this.enabled = false;
+      return;
     }
 
+    this.endpoint = endpoint;
+    this.bucketName = bucketName;
+    this.enabled = true;
+
     this.s3 = new S3({
-      endpoint: this.endpoint,
-      region: region,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+      endpoint,
+      region,
+      credentials: { accessKeyId, secretAccessKey },
       forcePathStyle: false,
     });
   }
@@ -50,6 +49,9 @@ export class UploadService {
     file: Express.Multer.File,
     folder?: string,
   ): Promise<UploadResponseDto> {
+    if (!this.enabled) {
+      throw new ServiceUnavailableException('File upload is currently unavailable – DigitalOcean Spaces not configured.');
+    }
     try {
       if (!file) {
         throw new BadRequestException('No file provided');
