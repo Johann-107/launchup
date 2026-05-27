@@ -168,7 +168,7 @@
 
 <form
   method="post"
-  class="flex flex-col h-full"
+  class="flex flex-col w-full flex-1 min-h-0"
   enctype="multipart/form-data"
 >
   {#if startup?.id}
