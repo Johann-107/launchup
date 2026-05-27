@@ -35,9 +35,9 @@
     localSelections = { ...localSelections, [category]: `${questionId}` };
   }
 
-  function isSelected(category: string, questionId: number): boolean {
-    if (localSelections[category]) return localSelections[category] === `${questionId}`;
-    if (selectedAnswers[category]) return selectedAnswers[category] === questionId;
+  function isSelected(category: string, questionId: number, locals: Record<string, string>, selected: Record<string, number>): boolean {
+    if (locals[category]) return locals[category] === `${questionId}`;
+    if (selected[category]) return selected[category] === questionId;
     return false;
   }
 
@@ -63,18 +63,18 @@
             <button
               type="button"
               class="flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all duration-200
-                {isSelected(category.category, question.id)
+                {isSelected(category.category, question.id, localSelections, selectedAnswers)
                   ? 'border-[#6366f1]/40 bg-[#6366f1]/5 text-slate-800 dark:border-[#6366f1]/30 dark:bg-[#6366f1]/10 dark:text-white/90'
                   : 'border-slate-200/50 bg-white/30 text-slate-600 hover:border-slate-300 hover:bg-white/60 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-white/10'}"
               onclick={(e) => { e.preventDefault(); selectOption(category.category, question.id); }}
             >
               <div
                 class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200
-                  {isSelected(category.category, question.id)
+                  {isSelected(category.category, question.id, localSelections, selectedAnswers)
                     ? 'border-[#6366f1] bg-[#6366f1]'
                     : 'border-slate-300 dark:border-white/20'}"
               >
-                {#if isSelected(category.category, question.id)}
+                {#if isSelected(category.category, question.id, localSelections, selectedAnswers)}
                   <div class="h-2 w-2 rounded-full bg-white"></div>
                 {/if}
               </div>
