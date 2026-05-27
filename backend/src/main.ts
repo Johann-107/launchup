@@ -41,6 +41,30 @@ async function seedLocalDemoData(orm: MikroORM) {
     em.persist(adminUser);
   }
 
+  let managerUser = await em.findOne(User, { email: 'manager@launchup.local' });
+  if (!managerUser) {
+    managerUser = em.create(User, {
+      email: 'manager@launchup.local',
+      hash: demoPasswordHash,
+      firstName: 'Demo',
+      lastName: 'Manager',
+      role: Role.Manager,
+    });
+    em.persist(managerUser);
+  }
+
+  let mentorUser = await em.findOne(User, { email: 'mentor@launchup.local' });
+  if (!mentorUser) {
+    mentorUser = em.create(User, {
+      email: 'mentor@launchup.local',
+      hash: demoPasswordHash,
+      firstName: 'Demo',
+      lastName: 'Mentor',
+      role: Role.Mentor,
+    });
+    em.persist(mentorUser);
+  }
+
   const readinessSeeds = [
     { level: 3, name: 'Team traction baseline', readinessType: ReadinessType.A },
     { level: 4, name: 'Market validation baseline', readinessType: ReadinessType.M },
