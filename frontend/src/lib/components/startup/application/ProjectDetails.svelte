@@ -76,7 +76,7 @@
 </script>
 
 <div class="flex-1 overflow-auto px-1" class:hidden={currentStep !== stepName}>
-  <div class="flex h-0 flex-col gap-5">
+  <div class="flex flex-col gap-5">
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-2">
         <Label for="startup_name" class="text-sm font-semibold text-slate-700 dark:text-white/70">Startup name <span class="text-red-500">*</span></Label>

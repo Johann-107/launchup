@@ -50,7 +50,7 @@
 </script>
 
 <div class="flex-1 overflow-auto px-1" class:hidden={currentStep !== stepName}>
-  <div class="flex h-0 flex-col gap-5">
+  <div class="flex flex-col gap-5">
     <div class="flex items-center justify-between">
       <span class="text-xs text-slate-500 dark:text-white/50">Answer all technology & commercialization readiness questions</span>
       <span class="text-xs font-semibold text-[#6366f1]">{answeredCount} / {calculatorQuestions?.length ?? 0} answered</span>

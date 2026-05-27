@@ -13,7 +13,7 @@
 </script>
 
 <div class="flex-1 overflow-auto px-1" class:hidden={currentStep !== stepName}>
-  <div class="flex h-0 flex-col gap-5">
+  <div class="flex flex-col gap-5">
     <div class="rounded-xl border border-slate-200/50 bg-[#6366f1]/5 px-4 py-2.5 dark:border-[#6366f1]/20 dark:bg-[#6366f1]/10">
       <span class="text-xs font-bold uppercase tracking-wider text-[#6366f1]">Acceptance Readiness Level</span>
     </div>
