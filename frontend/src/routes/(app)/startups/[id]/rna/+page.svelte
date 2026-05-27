@@ -52,15 +52,22 @@
 
   const generateRNA = async () => {
     generatingRNA = true;
-    await axiosInstance.get(`/rna/${data.startupId}/generate-rna/`, {
-      headers: {
-        Authorization: `Bearer ${data.access}`
-      }
-    });
-    generatingRNA = false;
-    toast.success('Successfuly generated RNA');
-    $rnaQueries[1].refetch();
-    $rnaQueries[4].refetch();
+    try {
+      await axiosInstance.get(`/rna/${data.startupId}/generate-rna/`, {
+        headers: {
+          Authorization: `Bearer ${data.access}`
+        }
+      });
+      toast.success('Successfully generated RNA');
+      $rnaQueries[1].refetch();
+      $rnaQueries[4].refetch();
+    } catch (error: any) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Failed to generate RNA';
+      toast.error(msg);
+    } finally {
+      generatingRNA = false;
+    }
   };
 
   const addToRNA = async (id: number) => {

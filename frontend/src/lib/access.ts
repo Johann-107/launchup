@@ -95,6 +95,7 @@ export const access = {
     },
     Manager: {
       modules: [
+        startupModule,
         {
           name: 'Applications',
           link: 'applications',

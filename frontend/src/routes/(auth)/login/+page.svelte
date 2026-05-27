@@ -5,20 +5,13 @@
   import { Label } from '$lib/components/ui/label/index.js';
   import { superForm } from 'sveltekit-superforms';
   import { toast } from 'svelte-sonner';
-  import { goto } from '$app/navigation';
   import { Loader } from 'lucide-svelte';
 
   let { data }: { data: PageData } = $props();
 
-  const { form, errors, enhance, message, submitting } = superForm(data.form);
+  const { form, errors, enhance, submitting } = superForm(data.form);
 
   $effect(() => {
-    if ($message && !$submitting) {
-      toast.dismiss();
-      toast.success('Login successful');
-      goto('/startups');
-    }
-
     if ($errors.email && !$submitting) {
       toast.dismiss();
       toast.error('Login failed');
@@ -30,37 +23,65 @@
   <title>Login</title>
 </svelte:head>
 
-<div
-  class="bg-muted/40 relative flex h-full flex-1 flex-col items-center rounded-bl-xl rounded-tl-xl"
->
-  <div class="absolute flex w-full cursor-pointer items-center gap-2 p-5">
-    <!-- <img src="launchlab_logo.png" alt="citeams_logo" class="h-7 w-7" /> -->
-    <a href="/" class="cursor-pointer text-xl font-black normal-case"
-      >LaunchUp</a
-    >
+<div class="grid min-h-screen lg:grid-cols-[1.08fr_0.92fr]">
+  <div class="relative hidden overflow-hidden bg-slate-50 dark:bg-slate-950 lg:flex lg:flex-col">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.06),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.2),transparent_30%)]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(0,0,0,0.02),transparent_40%,rgba(0,0,0,0.01))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%,rgba(255,255,255,0.03))]"></div>
+    <div class="relative z-10 flex items-center justify-between px-10 py-8 text-slate-900 dark:text-white/90">
+      <a href="/" class="text-xl font-black tracking-tight text-slate-950 dark:text-white">LaunchUp</a>
+      <div class="rounded-full border border-slate-200 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/90">
+        Focused access for founders
+      </div>
+    </div>
+    <div class="relative z-10 flex flex-1 items-center px-10 pb-10">
+      <div class="max-w-xl space-y-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/60">Welcome back</p>
+        <h1 class="text-5xl font-black tracking-[-0.05em] text-slate-950 dark:text-white">
+          Sign in to resume your startup journey.
+        </h1>
+        <p class="text-lg leading-8 text-slate-600 dark:text-white/72">
+          Everything here is tuned for speed, clarity, and a cleaner signal when it matters most.
+        </p>
+        <div class="grid gap-4 pt-4 sm:grid-cols-3">
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Access</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Fast login</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Signal</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Clear status</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
+            <p class="text-sm text-slate-500 dark:text-white/55">Flow</p>
+            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Less friction</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-10 right-10 w-[24rem]">
+      <img src="loginv2.svg" alt="" class="w-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.28)]" />
+    </div>
   </div>
 
-  <div class="flex flex-1 items-center justify-center">
-    <img src="loginv2.svg" alt="" class="h-3/4 w-3/4" />
-  </div>
-</div>
-<div
-  class="bg-background flex h-full flex-1 items-center justify-center rounded-br-xl rounded-tr-xl"
->
-  <form
-    method="post"
-    use:enhance
-    class="flex items-center justify-center py-12"
-  >
-    <div class="mx-auto grid w-[350px] gap-6">
-      <div class="grid gap-2 text-center">
-        <h1 class="text-3xl font-bold">Login</h1>
-        <p class="text-muted-foreground text-balance text-[15px]">
-          Enter your email below to login to your account
+  <div class="relative flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.08),transparent_36%),linear-gradient(to_bottom,#ffffff,#f7f9ff)] px-6 py-10 dark:bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.12),transparent_36%),linear-gradient(to_bottom,#020617,#050816)]">
+    <div class="absolute left-6 top-6 lg:hidden">
+      <a href="/" class="text-xl font-black tracking-tight">LaunchUp</a>
+    </div>
+    <form
+      method="post"
+      use:enhance
+      class="relative w-full max-w-md rounded-[2.5rem] border border-white/40 bg-white/60 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.06),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] sm:p-10"
+    >
+      <div class="absolute -inset-0.5 -z-10 rounded-[2.5rem] bg-gradient-to-br from-[#6366f1]/20 via-transparent to-[#0ea5e9]/20 blur-xl dark:from-[#6366f1]/10 dark:to-[#0ea5e9]/10"></div>
+      <div class="space-y-3 text-center">
+        <p class="text-sm font-semibold uppercase tracking-[0.28em] text-[#6366f1]">Login</p>
+        <h1 class="text-4xl font-black tracking-tight text-slate-950 dark:text-white">Welcome back</h1>
+        <p class="text-balance text-base leading-7 text-slate-600 dark:text-slate-300">
+          Enter your email and password to continue.
         </p>
       </div>
-      <div class="grid gap-4">
-        <div class="grid gap-2">
+      <div class="mt-8 grid gap-5">
+        <div class="grid gap-2.5">
           <Label for="email">Email</Label>
           <Input
             name="email"
@@ -69,34 +90,38 @@
             placeholder="m@example.com"
             required
             bind:value={$form.email}
+            class="h-12 rounded-2xl border-white/50 bg-white/70 shadow-sm transition-all focus-visible:border-[#6366f1]/50 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-[#6366f1]/10 focus-visible:ring-offset-0 dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-[#6366f1]/50 dark:focus-visible:bg-white/10"
           />
         </div>
-        <div class="grid gap-2">
-          <div class="flex items-center">
-            <Label for="password">Password</Label>
-          </div>
+        <div class="grid gap-2.5">
+          <Label for="password">Password</Label>
           <Input
             name="password"
             id="password"
             type="password"
             required
             bind:value={$form.password}
+            class="h-12 rounded-2xl border-white/50 bg-white/70 shadow-sm transition-all focus-visible:border-[#6366f1]/50 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-[#6366f1]/10 focus-visible:ring-offset-0 dark:border-white/10 dark:bg-white/5 dark:focus-visible:border-[#6366f1]/50 dark:focus-visible:bg-white/10"
           />
         </div>
         {#if $errors.email}
-          <p class="text-sm text-red-500">Invalid credentials</p>
+          <p class="text-sm font-medium text-rose-500">Invalid credentials</p>
         {/if}
-        <Button type="submit" class="w-full" disabled={$submitting}>
+        <Button
+          type="submit"
+          class="group mt-2 h-12 w-full rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 px-6 text-base font-semibold text-white shadow-[0_8px_30px_rgba(15,23,42,0.25),inset_0_1px_1px_rgba(255,255,255,0.15)] ring-1 ring-slate-950/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.35)] dark:from-white dark:to-slate-200 dark:text-slate-950 dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)]"
+          disabled={$submitting}
+        >
           {#if $submitting}
-            <Loader class="mr-2 h-4 w-4 animate-spin" />
+            <Loader class="mr-2 h-5 w-5 animate-spin" />
           {/if}
-          Login
+          Sign In
         </Button>
       </div>
-      <div class="mt-4 text-center text-sm">
+      <div class="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
         Don&apos;t have an account?
-        <a href="/register" class="underline"> Sign up </a>
+        <a href="/register" class="font-semibold text-[#4f46e5] underline-offset-4 hover:underline">Sign up</a>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </div>

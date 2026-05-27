@@ -7,7 +7,7 @@
 </script>
 
 <div
-  class="flex w-[74px] flex-col items-center rounded-xl border {borderColor} {bgColor} p-2 text-xs font-semibold {textColor}"
+  class="flex w-[74px] flex-col items-center rounded-2xl border {borderColor} {bgColor} p-2 text-xs font-semibold {textColor} shadow-sm transition-transform hover:scale-105"
 >
   <span class="text-base">{count}</span>
   <span>{label}</span>

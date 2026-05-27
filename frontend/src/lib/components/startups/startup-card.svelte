@@ -59,6 +59,50 @@
     statusMap[startup?.qualificationStatus] ?? statusMap[1]
   );
 
+  const readinessWeightMap: Record<string, number> = {
+    Acceptance: 0.3,
+    Market: 0.25,
+    Technology: 0.2,
+    Organizational: 0.15,
+    Investment: 0.1
+  };
+
+  const getTierLabel = (startupData: any) => {
+    if (!startupData?.readinessLevels || startupData.readinessLevels.length === 0) {
+      return 'Pending';
+    }
+
+    const scoreByType = new Map<string, number>();
+    for (const readiness of startupData.readinessLevels) {
+      const type = readiness.readinessLevel?.readinessType;
+      const level = readiness.readinessLevel?.level;
+      if (type && level !== undefined) {
+        scoreByType.set(type, Number(level));
+      }
+    }
+
+    const compositeScore = Math.round(
+      Object.entries(readinessWeightMap).reduce((total, [type, weight]) => {
+        const level = scoreByType.get(type) ?? 0;
+        return total + ((level / 5) * 100 * weight);
+      }, 0)
+    );
+
+    if (compositeScore >= 85) return 'Strong';
+    if (compositeScore >= 70) return 'Ready';
+    if (compositeScore >= 55) return 'Emerging';
+    if (compositeScore >= 40) return 'Developing';
+    return 'Early';
+  };
+
+  const tier = $derived(getTierLabel(startup));
+  
+  const getTierColor = (t: string) => {
+    if (t === 'Strong') return 'bg-green-500/10 text-green-500 border-green-500/20';
+    if (t === 'Developing') return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    if (t === 'Early') return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+    return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+  };
 </script>
 
 <a
@@ -73,10 +117,10 @@
   }}
 >
   <Card.Root
-    class="bg-background hover:bg-accent h-44 cursor-pointer rounded-xl border  p-0 transition-colors duration-150"
+    class="h-44 cursor-pointer rounded-[1.5rem] border border-white/40 bg-white/60 p-0 shadow-[0_4px_24px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_4px_24px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
   >
     <Card.Content class="h-full">
-      <div class="flex h-full flex-col justify-between p-3">
+      <div class="flex h-full flex-col justify-between p-4">
         <div class="mb-1 flex w-full items-center gap-3">
           <div
             class="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-lg text-base font-bold"
@@ -100,6 +144,12 @@
               ? 'Active'
               : status.label}
           </Badge>
+        </div>
+        <div class="mb-3 flex items-center gap-2 text-xs font-medium">
+          <span>Overall Tier:</span>
+          <div class={`rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wider ${getTierColor(tier)}`}>
+            {tier}
+          </div>
         </div>
         <div class="mb-1 flex items-center gap-2 text-xs">
           Initiatives

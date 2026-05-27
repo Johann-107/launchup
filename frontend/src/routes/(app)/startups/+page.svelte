@@ -204,16 +204,17 @@
 
 <div class="mb-8 flex items-center justify-between">
   <div>
-    <h2 class="text-3xl font-bold">Startups</h2>
-    <p>Manage assigned startups</p>
+    <h2 class="text-4xl font-black tracking-tight text-slate-950 dark:text-white">Startups</h2>
+    <p class="text-slate-600 dark:text-slate-400 mt-1">Manage assigned startups</p>
   </div>
   <Can role={['Startup']} userRole={role}>
     <div class="flex gap-5">
-      <a href="/apply">
-        <Button class="flex items-center justify-center gap-2 rounded-lg">
-          <RocketIcon class="h-4 w-4" /> Apply
-        </Button>
-      </a>
+      <Button
+        class="flex items-center justify-center gap-2 rounded-xl bg-[#6366f1] text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all duration-200"
+        onclick={toggleApplicationForm}
+      >
+        <RocketIcon class="h-4 w-4" /> Apply
+      </Button>
     </div>
   </Can>
 </div>
@@ -221,7 +222,7 @@
 <!-- Statistics Cards -->
 <div class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
   <div
-    class="group flex flex-col gap-1 rounded-xl border border-border bg-gradient-to-br from-background to-background/50 p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/50"
+    class="group flex flex-col gap-1 rounded-[2rem] border border-white/40 bg-white/60 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
   >
     <div class="flex items-center justify-between mb-3">
       <span class="text-sm font-medium text-muted-foreground">Total Startups</span>
@@ -275,7 +276,7 @@
   </div>
 
   <div
-    class="group flex flex-col gap-3 rounded-xl border border-border bg-gradient-to-br from-background to-background/50 p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/50"
+    class="group flex flex-col gap-3 rounded-[2rem] border border-white/40 bg-white/60 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
   >
     <div class="flex items-center justify-between">
       <span class="text-sm font-medium text-muted-foreground">Initiatives Progress</span>
@@ -307,7 +308,7 @@
   </div>
 
   <div
-    class="group flex flex-col gap-3 rounded-xl border border-border bg-gradient-to-br from-background to-background/50 p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/50"
+    class="group flex flex-col gap-3 rounded-[2rem] border border-white/40 bg-white/60 p-8 shadow-[0_8px_32px_rgba(15,23,42,0.04),inset_0_1px_1px_rgba(255,255,255,0.7)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]"
   >
     <div class="flex items-center justify-between">
       <span class="text-sm font-medium text-muted-foreground">Completion Rate</span>
@@ -336,7 +337,7 @@
   <div class="mb-2 flex w-[400px] items-center gap-2">
     <div class="relative flex-1">
       <input
-        class="w-full rounded-lg border border-border bg-background px-4 py-2 pr-12 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        class="w-full rounded-2xl border border-white/50 bg-white/70 px-4 py-3 pr-12 text-sm placeholder:text-slate-500 shadow-sm backdrop-blur-md transition-all focus:outline-none focus:ring-4 focus:ring-[#6366f1]/10 focus:border-[#6366f1]/50 dark:border-white/10 dark:bg-slate-950/60 dark:text-white dark:placeholder:text-slate-400"
         type="text"
         placeholder="Search startups..."
         bind:value={search}
@@ -350,7 +351,7 @@
       </button>
     </div>
   </div>
-  <div class="flex w-fit gap-0.5 rounded-xl border border-border">
+  <div class="flex w-fit gap-0.5 rounded-2xl border border-white/50 bg-white/40 p-1 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-slate-950/40">
     <StartupFilterButton
       label="All Startups"
       active={filter === 'All Startups'}
@@ -427,17 +428,18 @@
       {search ? 'Try adjusting your search criteria' : 'Get started by adding your first startup'}
     </p>
     <Can role={['Startup']} userRole={role}>
-      <a href="/apply">
-        <Button class="gap-2">
-          <RocketIcon class="h-4 w-4" /> Apply Now
-        </Button>
-      </a>
+      <Button
+        class="gap-2 rounded-xl bg-[#6366f1] text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]"
+        onclick={toggleApplicationForm}
+      >
+        <RocketIcon class="h-4 w-4" /> Apply Now
+      </Button>
     </Can>
   </div>
 {/if}
 
 <Dialog.Root open={showApplicationForm} onOpenChange={toggleApplicationForm}>
-  <Dialog.Content class="h-4/5 max-w-[800px]">
+  <Dialog.Content class="flex flex-col h-[90vh] max-w-4xl overflow-hidden rounded-3xl border-slate-200/70 bg-white/95 p-6 shadow-[0_32px_80px_rgba(15,23,42,0.2)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/95">
     <Application access={data.access!} startup={selectedStartup} />
   </Dialog.Content>
 </Dialog.Root>

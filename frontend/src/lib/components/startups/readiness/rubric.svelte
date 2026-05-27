@@ -8,7 +8,7 @@
 
 <div class="flex flex-col gap-3" class:hidden={step - 1 !== current}>
   {#each questionnaires as questionnaire, index}
-    {@const criterias = questionnaire.level_criteria}
+    {@const criterias = questionnaire.criteria}
     <div class="flex flex-col gap-1">
       <div class="flex gap-3">
         <div>

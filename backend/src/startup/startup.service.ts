@@ -67,11 +67,12 @@ export class StartupService {
         return await this.em.find(
           Startup,
           { mentors: { id: userId } },
-          { populate: ['mentors', 'capsuleProposal'] },
+          { populate: ['mentors', 'capsuleProposal', 'readinessLevels.readinessLevel'] },
         );
+      case Role.Admin:
       case Role.Manager:
         return await this.em.findAll(Startup, {
-          populate: ['user', 'mentors', 'members', 'capsuleProposal'],
+          populate: ['user', 'mentors', 'members', 'capsuleProposal', 'readinessLevels.readinessLevel'],
         });
     }
   }
@@ -126,14 +127,11 @@ export class StartupService {
         name: dto.title,
         user: user,
         qualificationStatus: QualificationStatus.PENDING,
-        dataPrivacy: true,
-        eligibility: true,
-        // qualificationStatus: dto.qualificationStatus,
-        // dataPrivacy: dto.dataPrivacy ?? false,
-        // links: dto.links,
-        // groupName: dto.groupName,
-        // universityName: dto.universityName,
-        // eligibility: dto.eligibility ?? false,
+        dataPrivacy: dto.dataPrivacy ?? false,
+        links: dto.links,
+        groupName: dto.groupName,
+        universityName: dto.universityName,
+        eligibility: dto.eligibility ?? false,
       });
 
       await this.em.persistAndFlush(startup);
@@ -179,10 +177,10 @@ export class StartupService {
 
         proposal.members = Array.isArray(dto.members) ? dto.members : [];
 
-        proposal.intellectualPropertyStatus = dto.intellectualPropertyStatus;
-        proposal.scope = dto.proposalScope;
-        proposal.methodology = dto.methodology;
-        proposal.curriculumVitae = dto.curriculumVitae ?? null;
+        proposal.intellectualPropertyStatus = dto.intellectualPropertyStatus ?? 'Pending AI Generation';
+        proposal.scope = dto.proposalScope ?? 'Pending AI Generation';
+        proposal.methodology = dto.methodology ?? 'Pending AI Generation';
+        proposal.curriculumVitae = dto.curriculumVitae ?? undefined;
         proposal.aiAnalysisSummary = aiAnalysisSummary;
 
         await this.em.flush();
@@ -214,10 +212,10 @@ export class StartupService {
         // Ensure members is always an array of objects
         members: Array.isArray(dto.members) ? dto.members : [],
 
-        intellectualPropertyStatus: dto.intellectualPropertyStatus,
-        scope: dto.proposalScope,
-        methodology: dto.methodology,
-        curriculumVitae: dto.curriculumVitae ?? null,
+        intellectualPropertyStatus: dto.intellectualPropertyStatus ?? 'Pending AI Generation',
+        scope: dto.proposalScope ?? 'Pending AI Generation',
+        methodology: dto.methodology ?? 'Pending AI Generation',
+        curriculumVitae: dto.curriculumVitae ?? undefined,
         aiAnalysisSummary,
         startup,
       });
@@ -1078,10 +1076,10 @@ export class StartupService {
     proposal.historicalTimeline = dto.historicalTimeline ?? [];
     proposal.competitiveAdvantageAnalysis =
       dto.competitiveAdvantageAnalysis ?? [];
-    proposal.intellectualPropertyStatus = dto.intellectualPropertyStatus;
-    proposal.scope = dto.proposalScope;
-    proposal.methodology = dto.methodology;
-    proposal.curriculumVitae = dto.curriculumVitae ?? proposal.curriculumVitae;
+    proposal.intellectualPropertyStatus = dto.intellectualPropertyStatus ?? 'Pending AI Generation';
+    proposal.scope = dto.proposalScope ?? 'Pending AI Generation';
+    proposal.methodology = dto.methodology ?? 'Pending AI Generation';
+    proposal.curriculumVitae = dto.curriculumVitae ?? undefined;
     proposal.members = dto.members ?? [];
 
     startup.name = dto.title;

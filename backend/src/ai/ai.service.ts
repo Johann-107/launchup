@@ -1,26 +1,133 @@
 import { GoogleGenAI } from '@google/genai';
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
+import { AiMetricsService } from './ai-metrics.service';
 import { ConfigService } from '@nestjs/config';
 import { StartupReadinessLevel } from 'src/entities/startup-readiness-level.entity';
 import { Startup } from 'src/entities/startup.entity';
 import { StartupApplicationDto } from 'src/startup/dto/startup.dto';
+import { z } from 'zod';
+
+const AI_GROUNDING_INSTRUCTION =
+  'Only use facts explicitly present in the user-provided input. Never invent names, numbers, dates, or organizations. If you are uncertain about a field, return null instead of guessing.';
+
+const readinessRnaSchema = z.array(
+  z.object({
+    readiness_level_type: z.string(),
+    rna: z.string().nullable(),
+  }),
+);
+
+const readinessTaskSchema = z.array(
+  z.object({
+    target_level: z.coerce.number().int().min(0),
+    description: z.string(),
+  }),
+);
+
+const readinessInitiativeSchema = z.array(
+  z.object({
+    description: z.string(),
+    measures: z.string(),
+    targets: z.string(),
+    remarks: z.string(),
+  }),
+);
+
+const readinessRoadblockSchema = z.array(
+  z.object({
+    description: z.string(),
+    fix: z.string(),
+    riskNumber: z.coerce.number().int().min(0),
+  }),
+);
 
 @Injectable()
 export class AiService {
   private readonly ai: GoogleGenAI;
   private readonly modelName = 'gemini-2.5-flash-lite';
 
-  constructor(private config: ConfigService) {
+  constructor(private config: ConfigService, private metrics: AiMetricsService) {
     this.ai = new GoogleGenAI({
       apiKey: this.config.get<string>('GEMINI_API_KEY'),
     });
   }
 
+  private groundPrompt(prompt: string) {
+    return `${prompt}\n\nGrounding instruction: ${AI_GROUNDING_INSTRUCTION}`;
+  }
+
+  private extractJsonPayload(text: string) {
+    const firstCurly = text.indexOf('{');
+    const firstSquare = text.indexOf('[');
+    const candidates = [firstCurly, firstSquare].filter((index) => index !== -1);
+    const jsonStart = candidates.length ? Math.min(...candidates) : -1;
+    const lastCurly = text.lastIndexOf('}');
+    const lastSquare = text.lastIndexOf(']');
+    const jsonEnd = Math.max(lastCurly, lastSquare);
+
+    if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      return null;
+    }
+
+    return text.substring(jsonStart, jsonEnd + 1);
+  }
+
+  private async callAiExpectJson<T>(options: {
+    prompt: string;
+    schema: z.ZodType<T>;
+    fallback: T;
+    correctivePrompt: string;
+  }): Promise<T> {
+    const { prompt, schema, fallback, correctivePrompt } = options;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const res = await this.ai.models.generateContent({
+        model: this.modelName,
+        contents: this.groundPrompt(attempt === 1 ? prompt : `${prompt}\n\n${correctivePrompt}`),
+        temperature: attempt === 1 ? 0.0 : 0.2,
+        maxOutputTokens: 1024,
+      } as any);
+
+      const text = res?.text?.trim();
+      if (!text) {
+        await this.metrics.recordFailure({ type: 'no_text', detail: { attempt } });
+        continue;
+      }
+
+      const payload = this.extractJsonPayload(text);
+      if (!payload) {
+        await this.metrics.recordFailure({ type: 'no_json', detail: { attempt, snippet: text.slice(0, 1000) } });
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(payload);
+        const validated = schema.safeParse(parsed);
+
+        if (validated.success) {
+          return validated.data;
+        }
+
+        await this.metrics.recordFailure({
+          type: 'schema_invalid',
+          detail: { attempt, issues: validated.error.issues.map((issue) => issue.message) },
+        });
+      } catch (error) {
+        await this.metrics.recordFailure({
+          type: 'invalid_json',
+          detail: { attempt, snippet: text.slice(0, 1000), error: error instanceof Error ? error.message : String(error) },
+        });
+      }
+    }
+
+    return fallback;
+  }
+
   async test() {
     const res = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: 'what is the lyrics for bloom necry talkie',
+      contents: this.groundPrompt('what is the lyrics for bloom necry talkie'),
     });
     return res.text;
   }
@@ -28,7 +135,7 @@ export class AiService {
   async getCapsuleProposalInfo(text: string) {
     const res = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: `Based on the text ${text},
+      contents: this.groundPrompt(`Based on the text ${text},
         Task: extract the text for:
         -Acceleration Proposal Title ( can be found above the Duration: 3 months, etc.)
         - Startup Description
@@ -42,7 +149,7 @@ export class AiService {
         Requirement: The response should be in a JSON format.
         It should consist of title, startup_description, problem_statement, target_market, solution_description, objectives, scope, and methodology
         JSON format: {"title": "", "startup_description": "", "problem_statement": (int), "target_market": "", "solution_description": "", "objectives": "", "scope": "", "methodology": ""}
-        `,
+        `),
     });
     return res.text;
   }
@@ -52,7 +159,7 @@ export class AiService {
   ): Promise<string> {
     const res = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: `Please provide a comprehensive analysis of the following startup proposal:
+      contents: this.groundPrompt(`Please provide a comprehensive analysis of the following startup proposal:
       
       Title: ${dto.title}
       Description: ${dto.description}
@@ -85,7 +192,7 @@ export class AiService {
       - Start directly with the analysis, no introductory phrases
       - Be clear and direct about the startup's potential
       - Focus on the most impactful insights
-      - Keep output concise while covering essential points`,
+      - Keep output concise while covering essential points`),
     });
 
     if (!res.text) {
@@ -97,60 +204,26 @@ export class AiService {
 
   async generateRNAsFromPrompt(
     prompt: string,
-  ): Promise<{ readiness_level_type: string; rna: string }[]> {
-    const res = await this.ai.models.generateContent({
-      model: this.modelName,
-      contents: prompt,
+  ): Promise<{ readiness_level_type: string; rna: string | null }[]> {
+    return this.callAiExpectJson({
+      prompt,
+      schema: readinessRnaSchema,
+      fallback: [],
+      correctivePrompt:
+        'The previous answer was invalid. Return only a JSON array where every item has readiness_level_type and rna fields as strings.',
     });
-
-    const text = res.text;
-
-    if (!text) {
-      throw new Error('AI response did not contain any text');
-    }
-
-    try {
-      const jsonStart = text.indexOf('[');
-      const jsonEnd = text.lastIndexOf(']');
-      const jsonString = text.substring(jsonStart, jsonEnd + 1);
-
-      return JSON.parse(jsonString).map((entry: any) => ({
-        readiness_level_type: entry.readiness_level_type,
-        rna: entry.rna,
-      }));
-    } catch (err) {
-      console.error('Failed to parse AI response:', text);
-      throw new Error('AI returned an invalid RNA response');
-    }
   }
 
   async generateTasksFromPrompt(
     prompt: string,
   ): Promise<{ target_level: number; description: string }[]> {
-    const res = await this.ai.models.generateContent({
-      model: this.modelName,
-      contents: prompt,
+    return this.callAiExpectJson({
+      prompt,
+      schema: readinessTaskSchema,
+      fallback: [],
+      correctivePrompt:
+        'The previous answer was invalid. Return only a JSON array where every item has an integer target_level and a description string.',
     });
-
-    const text = res.text;
-
-    if (!text) {
-      throw new Error('AI response did not contain any text');
-    }
-
-    try {
-      const jsonStart = text.indexOf('[');
-      const jsonEnd = text.lastIndexOf(']');
-      const jsonString = text.substring(jsonStart, jsonEnd + 1);
-      const parsedData = JSON.parse(jsonString);
-      return parsedData.map((task: any) => ({
-        target_level: parseInt(task.target_level, 10) || 0,
-        description: task.description,
-      }));
-    } catch (err) {
-      console.error('Failed to parse AI response:', text);
-      throw new Error('AI returned an invalid response');
-    }
   }
 
   async generateInitiativesFromPrompt(prompt: string): Promise<
@@ -161,32 +234,13 @@ export class AiService {
       remarks: string;
     }[]
   > {
-    const res = await this.ai.models.generateContent({
-      model: this.modelName,
-      contents: prompt,
+    return this.callAiExpectJson({
+      prompt,
+      schema: readinessInitiativeSchema,
+      fallback: [],
+      correctivePrompt:
+        'The previous answer was invalid. Return only a JSON array where every item has description, measures, targets, and remarks fields as strings.',
     });
-
-    const text = res.text;
-
-    if (!text) {
-      throw new Error('AI response did not contain any text');
-    }
-
-    try {
-      const jsonStart = text.indexOf('[');
-      const jsonEnd = text.lastIndexOf(']');
-      const jsonString = text.substring(jsonStart, jsonEnd + 1);
-
-      return JSON.parse(jsonString).map((entry: any) => ({
-        description: entry.description,
-        measures: entry.measures,
-        targets: entry.targets,
-        remarks: entry.remarks,
-      }));
-    } catch (err) {
-      console.error('Failed to parse AI response:', text);
-      throw new Error('AI returned an invalid initiative response');
-    }
   }
 
   async refineRnsDescription(
@@ -194,7 +248,7 @@ export class AiService {
   ): Promise<{ refinedDescription: string; aiCommentary: string }> {
     const res = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: prompt,
+      contents: this.groundPrompt(prompt),
     });
 
     if (!res.text) {
@@ -216,30 +270,13 @@ export class AiService {
   async generateRoadblocksFromPrompt(
     prompt: string,
   ): Promise<{ description: string; fix: string; riskNumber: number }[]> {
-    const res = await this.ai.models.generateContent({
-      model: this.modelName,
-      contents: prompt,
+    return this.callAiExpectJson({
+      prompt,
+      schema: readinessRoadblockSchema,
+      fallback: [],
+      correctivePrompt:
+        'The previous answer was invalid. Return only a JSON array where every item has description and fix as strings and riskNumber as an integer.',
     });
-    const text = res.text;
-
-    if (!text) {
-      throw new Error('AI response did not contain any text');
-    }
-
-    try {
-      const jsonStart = text.indexOf('[');
-      const jsonEnd = text.lastIndexOf(']');
-      const jsonString = text.substring(jsonStart, jsonEnd + 1);
-
-      return JSON.parse(jsonString).map((entry: any) => ({
-        description: entry.description,
-        fix: entry.fix,
-        riskNumber: entry.riskNumber,
-      }));
-    } catch (err) {
-      console.error('Failed to parse AI response:', text);
-      throw new Error('AI returned an invalid roadblock response');
-    }
   }
 
   async createBasePrompt(
@@ -305,7 +342,7 @@ export class AiService {
   }> {
     const response = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: prompt,
+      contents: this.groundPrompt(prompt),
     });
 
     const content = response.text;
@@ -348,7 +385,7 @@ export class AiService {
   }> {
     const response = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: prompt,
+      contents: this.groundPrompt(prompt),
     });
 
     const content = response.text;
@@ -386,7 +423,7 @@ export class AiService {
   }> {
     const response = await this.ai.models.generateContent({
       model: this.modelName,
-      contents: prompt,
+      contents: this.groundPrompt(prompt),
     });
 
     const content = response.text;

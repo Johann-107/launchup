@@ -6,7 +6,6 @@
   import { Label } from '$lib/components/ui/label/index.js';
   import { Textarea } from '$lib/components/ui/textarea';
 
-  // Filter and sort market answers
   $: marketAnswers =
     startup?.uratQuestionAnswers
       ?.filter((answer: any) => answer.uratQuestion.readinessType === 'Market')
@@ -14,24 +13,37 @@
 </script>
 
 <div class="flex-1 overflow-auto px-1" class:hidden={currentStep !== stepName}>
-  <div class="flex h-0 flex-col gap-5">
+  <div class="flex flex-col gap-5">
+    <div class="rounded-xl border border-slate-200/50 bg-[#6366f1]/5 px-4 py-2.5 dark:border-[#6366f1]/20 dark:bg-[#6366f1]/10">
+      <span class="text-xs font-bold uppercase tracking-wider text-[#6366f1]">Market Readiness Level</span>
+    </div>
     {#each question as q, i}
-      <div class="grid w-full gap-1.5">
-        <Label for="message">{q.question}</Label>
-        <Textarea
-          placeholder="Type your message here."
-          id="message"
-          name={`market${i}`}
-          value={marketAnswers[i]?.response ?? ''}
-        />
-        <input type="hidden" name={`market${i}id`} value={`${q.id}`} />
-        {#if marketAnswers[i]?.id}
-          <input
-            type="hidden"
-            name={`market${i}answerId`}
-            value={`${marketAnswers[i].id}`}
+      <div class="group grid w-full gap-3 rounded-2xl border border-slate-200/60 bg-white/60 p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:bg-white/90 dark:border-white/5 dark:bg-white/[0.02] dark:hover:bg-white/[0.04] backdrop-blur-md relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#6366f1]/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
+        <div class="flex items-start gap-3 relative z-10">
+          <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#6366f1]/10 text-xs font-bold text-[#6366f1] ring-1 ring-[#6366f1]/20 shadow-[0_0_10px_rgba(99,102,241,0.1)]">
+            {i + 1}
+          </span>
+          <Label for="market_{i}" class="text-sm font-bold leading-relaxed text-slate-800 dark:text-white/90">{q.question}</Label>
+        </div>
+        <div class="relative z-10 pl-10">
+          <Textarea
+            placeholder="Provide a detailed answer here..."
+            id="market_{i}"
+            name="market{i}"
+            value={marketAnswers[i]?.response ?? ''}
+            class="min-h-[100px] rounded-xl border-slate-200/70 bg-white/80 resize-none p-4 text-sm shadow-inner focus-visible:ring-2 focus-visible:ring-[#6366f1] focus-visible:border-transparent dark:border-white/10 dark:bg-black/20 dark:focus-visible:bg-black/40 transition-colors"
           />
-        {/if}
+          <div class="mt-2 flex items-center justify-end">
+            <span class="text-[11px] font-medium text-slate-400 dark:text-white/40 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
+              {(marketAnswers[i]?.response ?? '').length} chars
+            </span>
+          </div>
+          <input type="hidden" name="market{i}id" value={`${q.id}`} />
+          {#if marketAnswers[i]?.id}
+            <input type="hidden" name="market{i}answerId" value={`${marketAnswers[i].id}`} />
+          {/if}
+        </div>
       </div>
     {/each}
   </div>

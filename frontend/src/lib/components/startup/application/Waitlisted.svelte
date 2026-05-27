@@ -6,7 +6,7 @@
 </script>
 
 <div class="flex-1 overflow-auto px-1" class:hidden={currentStep !== stepName}>
-  <div class="flex h-0 flex-col gap-5">
+  <div class="flex flex-col gap-5">
     <Label class="text-base font-semibold">
       Reason for waitlisting given by manager
     </Label>

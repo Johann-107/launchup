@@ -8,7 +8,7 @@ export const load: LayoutServerLoad = async ({
   cookies
 }) => {
   if (!locals.user) {
-    redirect(302, '/');
+    throw redirect(302, '/');
   }
 
   if (cookies.get('isMentorRole') === 'yes' && locals.user.role === 'Manager') {

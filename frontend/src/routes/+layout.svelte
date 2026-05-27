@@ -19,7 +19,7 @@
 <ModeWatcher />
 <Toaster richColors duration={2000} />
 <QueryClientProvider client={queryClient}>
-  <div class="h-screen w-screen">
+  <div class="h-screen w-full overflow-x-clip">
     {@render children()}
   </div>
 </QueryClientProvider>
