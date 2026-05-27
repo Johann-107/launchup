@@ -59,31 +59,43 @@
     statusMap[startup?.qualificationStatus] ?? statusMap[1]
   );
 
-  // Calculate tier based on readiness levels
-  const calculatedTier = $derived(() => {
-    if (!startup?.readinessLevels || startup.readinessLevels.length === 0) return 'Pending';
-    
-    // Sum the levels of all associated readiness levels
-    let totalScore = 0;
-    let count = 0;
-    
-    for (const rl of startup.readinessLevels) {
-      if (rl.readinessLevel?.level !== undefined) {
-        totalScore += Number(rl.readinessLevel.level);
-        count++;
+  const readinessWeightMap: Record<string, number> = {
+    Acceptance: 0.3,
+    Market: 0.25,
+    Technology: 0.2,
+    Organizational: 0.15,
+    Investment: 0.1
+  };
+
+  const getTierLabel = (startupData: any) => {
+    if (!startupData?.readinessLevels || startupData.readinessLevels.length === 0) {
+      return 'Pending';
+    }
+
+    const scoreByType = new Map<string, number>();
+    for (const readiness of startupData.readinessLevels) {
+      const type = readiness.readinessLevel?.readinessType;
+      const level = readiness.readinessLevel?.level;
+      if (type && level !== undefined) {
+        scoreByType.set(type, Number(level));
       }
     }
-    
-    if (count === 0) return 'Pending';
-    
-    const avg = totalScore / count;
-    
-    if (avg >= 7) return 'Strong';
-    if (avg >= 4) return 'Developing';
+
+    const compositeScore = Math.round(
+      Object.entries(readinessWeightMap).reduce((total, [type, weight]) => {
+        const level = scoreByType.get(type) ?? 0;
+        return total + ((level / 5) * 100 * weight);
+      }, 0)
+    );
+
+    if (compositeScore >= 85) return 'Strong';
+    if (compositeScore >= 70) return 'Ready';
+    if (compositeScore >= 55) return 'Emerging';
+    if (compositeScore >= 40) return 'Developing';
     return 'Early';
-  });
-  
-  const tier = $derived(calculatedTier());
+  };
+
+  const tier = $derived(getTierLabel(startup));
   
   const getTierColor = (t: string) => {
     if (t === 'Strong') return 'bg-green-500/10 text-green-500 border-green-500/20';
