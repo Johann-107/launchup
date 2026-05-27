@@ -217,8 +217,7 @@
     </div>
   </div>
 
-  <!-- Content Area with current step title -->
-  <div class="flex-1 overflow-auto rounded-2xl border border-slate-200/70 bg-white/50 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/40">
+  <div class="flex-1 min-h-0 overflow-auto rounded-2xl border border-slate-200/70 bg-white/50 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/40">
     <!-- Step Title -->
     <div class="mb-4 pb-3 border-b border-slate-200/50 dark:border-white/10">
       <div class="flex items-center gap-2.5">
