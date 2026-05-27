@@ -147,6 +147,124 @@ async function seedLocalDemoData(orm: MikroORM) {
   }
   */
   // The original startup initialization remains unmodified
+  // After ensuring baseline readiness levels and users, seed the demo startups
+  await seedDemoStartups(orm, demoUser, adminUser, managerUser, mentorUser);
+}
+
+async function ensureReadinessLevelExists(em, readinessType, level) {
+  let rl = await em.findOne(ReadinessLevel, { readinessType, level });
+  if (!rl) {
+    rl = em.create(ReadinessLevel, {
+      level,
+      name: `Seeded ${readinessType} level ${level}`,
+      readinessType,
+    });
+    em.persist(rl);
+    await em.flush();
+  }
+  return rl;
+}
+
+async function seedDemoStartups(orm: MikroORM, demoUser: User, adminUser: User, managerUser: User, mentorUser: User) {
+  const em = orm.em.fork();
+
+  // AgroLink PH (early stage)
+  let agro = await em.findOne(Startup, { name: 'AgroLink PH' });
+  if (!agro) {
+    agro = em.create(Startup, {
+      name: 'AgroLink PH',
+      user: managerUser,
+      qualificationStatus: QualificationStatus.PENDING,
+      dataPrivacy: true,
+      eligibility: true,
+      links: JSON.stringify({ team: '2 founders', revenue: 0, sector: 'agritech' }),
+    });
+    em.persist(agro);
+    await em.flush();
+    agro.members.add(managerUser);
+    await em.flush();
+
+    const agroLevels = [
+      [ReadinessType.T, 2],
+      [ReadinessType.M, 2],
+      [ReadinessType.A, 1],
+      [ReadinessType.O, 2],
+      [ReadinessType.R, 1],
+      [ReadinessType.I, 1],
+    ];
+
+    for (const [type, level] of agroLevels) {
+      const readinessLevel = await ensureReadinessLevelExists(em, type, level);
+      const existingLink = await em.findOne(StartupReadinessLevel, {
+        startup: { id: agro.id },
+        readinessLevel: { id: readinessLevel.id },
+      });
+      if (!existingLink) {
+        em.persist(
+          em.create(StartupReadinessLevel, {
+            startup: agro,
+            readinessLevel,
+            remark: 'Seeded baseline for AgroLink PH',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }),
+        );
+      }
+    }
+    await em.flush();
+    console.log('Seeded startup AgroLink PH id=', agro.id);
+  } else {
+    console.log('AgroLink PH already exists id=', agro.id);
+  }
+
+  // MediSync Cebu (mid stage)
+  let medi = await em.findOne(Startup, { name: 'MediSync Cebu' });
+  if (!medi) {
+    medi = em.create(Startup, {
+      name: 'MediSync Cebu',
+      user: mentorUser,
+      qualificationStatus: QualificationStatus.PENDING,
+      dataPrivacy: true,
+      eligibility: true,
+      links: JSON.stringify({ team: '3 founders', revenue: 5000, sector: 'healthtech' }),
+    });
+    em.persist(medi);
+    await em.flush();
+    medi.members.add(mentorUser);
+    await em.flush();
+
+    const mediLevels = [
+      [ReadinessType.T, 5],
+      [ReadinessType.M, 4],
+      [ReadinessType.A, 3],
+      [ReadinessType.O, 4],
+      [ReadinessType.R, 3],
+      [ReadinessType.I, 3],
+    ];
+
+    for (const [type, level] of mediLevels) {
+      const readinessLevel = await ensureReadinessLevelExists(em, type, level);
+      const existingLink = await em.findOne(StartupReadinessLevel, {
+        startup: { id: medi.id },
+        readinessLevel: { id: readinessLevel.id },
+      });
+      if (!existingLink) {
+        em.persist(
+          em.create(StartupReadinessLevel, {
+            startup: medi,
+            readinessLevel,
+            remark: 'Seeded baseline for MediSync Cebu',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }),
+        );
+      }
+    }
+    await em.flush();
+    console.log('Seeded startup MediSync Cebu id=', medi.id);
+  } else {
+    console.log('MediSync Cebu already exists id=', medi.id);
+  }
 }
 
 async function bootstrap() {
