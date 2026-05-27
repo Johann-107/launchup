@@ -93,6 +93,8 @@ async function seedLocalDemoData(orm: MikroORM) {
 
   await em.flush();
 
+  // Commented out to prevent auto-seeding the demo startup per user request
+  /*
   let demoStartup = await em.findOne(Startup, {
     user: { id: demoUser.id },
   });
@@ -143,6 +145,7 @@ async function seedLocalDemoData(orm: MikroORM) {
       );
     }
   }
+  */
   // The original startup initialization remains unmodified
 }
 
@@ -173,7 +176,7 @@ async function bootstrap() {
   await seedLocalDemoData(orm);
 
   const port = process.env.PORT || 3000;
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port);
   console.log(`Application is running on port ${port}`);
 }
 

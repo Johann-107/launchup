@@ -52,7 +52,7 @@ export class ReadinesslevelService {
   }
 
   async getReadinessLevels() {
-    return await this.em.findAll(ReadinessLevel);
+    return await this.em.findAll(ReadinessLevel, { populate: ['criteria'] });
   }
 
   async getReadinessLevelCriterion() {

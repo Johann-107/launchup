@@ -123,8 +123,8 @@ export class StartupApplicationDto {
   competitiveAdvantageAnalysis: CompetitiveAdvantageDto[];
 
   @IsString()
-  @IsNotEmpty()
-  intellectualPropertyStatus: string;
+  @IsOptional()
+  intellectualPropertyStatus?: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -132,12 +132,12 @@ export class StartupApplicationDto {
   objectives: string[];
 
   @IsString()
-  @IsNotEmpty()
-  proposalScope: string;
+  @IsOptional()
+  proposalScope?: string;
 
   @IsString()
-  @IsNotEmpty()
-  methodology: string;
+  @IsOptional()
+  methodology?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -146,8 +146,28 @@ export class StartupApplicationDto {
   members: MemberDto[];
 
   @IsString()
-  @IsNotEmpty()
-  curriculumVitae: string;
+  @IsOptional()
+  curriculumVitae?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  dataPrivacy?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  eligibility?: boolean;
+
+  @IsString()
+  @IsOptional()
+  links?: string;
+
+  @IsString()
+  @IsOptional()
+  groupName?: string;
+
+  @IsString()
+  @IsOptional()
+  universityName?: string;
 }
 
 export class WaitlistStartupDto {

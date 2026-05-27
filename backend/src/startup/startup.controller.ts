@@ -17,7 +17,8 @@ import { AiService } from 'src/ai/ai.service';
 import { StartupService } from './startup.service';
 import { JwtGuard } from 'src/auth/guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadedFile } from '@nestjs/common';
+import { UploadedFile, BadRequestException } from '@nestjs/common';
+import * as PdfParse from 'pdf-parse';
 import { UpdateStartupDto } from '../admin/dto/update-startup.dto';
 import {
   StartupApplicationDto,
@@ -86,12 +87,33 @@ export class StartupController {
     return await this.startupService.addMemberToStartup(dto);
   }
 
-  @Delete('remove-member/:userId')
+  @Post('remove-member')
   async removeMemberFromStartup(
-    @Param('userId') userId: number,
+    @Body('userId', ParseIntPipe) userId: number,
     @Body('startupId', ParseIntPipe) startupId: number,
   ) {
     return await this.startupService.removeMemberFromStartup(userId, startupId);
+  }
+
+  @Post('/parse-capsule-proposal')
+  @UseInterceptors(FileInterceptor('capsuleProposal'))
+  async getCapsuleProposal(@UploadedFile() file: Express.Multer.File) {
+    try {
+      if (!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+
+      const data = await PdfParse(file.buffer);
+      let res = await this.aiService.getCapsuleProposalInfo(data.text);
+
+      if (res) {
+        res = res.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        return JSON.parse(res);
+      }
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException('Failed to process PDF');
+    }
   }
 
   @Get(':startupId')

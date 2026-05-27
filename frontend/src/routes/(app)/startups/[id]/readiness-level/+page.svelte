@@ -67,20 +67,20 @@
 
     return {
       technology: query.data.filter(
-        (r: any) => r.readiness_type === 'Technology'
+        (r: any) => r.readinessType === 'Technology'
       ),
-      market: query.data.filter((r: any) => r.readiness_type === 'Market'),
+      market: query.data.filter((r: any) => r.readinessType === 'Market'),
       acceptance: query.data.filter(
-        (r: any) => r.readiness_type === 'Acceptance'
+        (r: any) => r.readinessType === 'Acceptance'
       ),
       organizational: query.data.filter(
-        (r: any) => r.readiness_type === 'Organizational'
+        (r: any) => r.readinessType === 'Organizational'
       ),
       regulatory: query.data.filter(
-        (r: any) => r.readiness_type === 'Regulatory'
+        (r: any) => r.readinessType === 'Regulatory'
       ),
       investment: query.data.filter(
-        (r: any) => r.readiness_type === 'Investment'
+        (r: any) => r.readinessType === 'Investment'
       )
     };
   });
@@ -100,20 +100,20 @@
 
     return {
       technology: query.data.filter(
-        (r: any) => r.readiness_type === 'Technology'
+        (r: any) => r.readinessType === 'Technology'
       ),
-      market: query.data.filter((r: any) => r.readiness_type === 'Market'),
+      market: query.data.filter((r: any) => r.readinessType === 'Market'),
       acceptance: query.data.filter(
-        (r: any) => r.readiness_type === 'Acceptance'
+        (r: any) => r.readinessType === 'Acceptance'
       ),
       organizational: query.data.filter(
-        (r: any) => r.readiness_type === 'Organizational'
+        (r: any) => r.readinessType === 'Organizational'
       ),
       regulatory: query.data.filter(
-        (r: any) => r.readiness_type === 'Regulatory'
+        (r: any) => r.readinessType === 'Regulatory'
       ),
       investment: query.data.filter(
-        (r: any) => r.readiness_type === 'Investment'
+        (r: any) => r.readinessType === 'Investment'
       )
     };
   });
@@ -282,7 +282,7 @@
     {:else}
       <div class="flex h-full flex-col gap-3">
         <div class="flex h-full flex-col overflow-scroll">
-          <div class="flex h-0 flex-col">
+          <div class="flex flex-1 flex-col">
             <RatedRubric
               questionnaires={rubrics().technology}
               type={'technology'}
@@ -323,5 +323,59 @@
         </div>
       </div>
     {/if}
+  </div>
+{/snippet}
+
+{#snippet mentor()}
+  <div class="flex h-full flex-col gap-3">
+    <Stepper {current} />
+    <div class="flex h-full flex-col overflow-scroll">
+      <form method="post" bind:this={form} class="flex flex-1 flex-col">
+        <Rubric
+          questionnaires={rubrics().technology}
+          step={1}
+          {current}
+          type={'technology'}
+        />
+        <Rubric
+          questionnaires={rubrics().acceptance}
+          step={2}
+          {current}
+          type={'acceptance'}
+        />
+        <Rubric
+          questionnaires={rubrics().market}
+          step={3}
+          {current}
+          type={'market'}
+        />
+        <Rubric
+          questionnaires={rubrics().regulatory}
+          step={4}
+          {current}
+          type={'regulatory'}
+        />
+        <Rubric
+          questionnaires={rubrics().organizational}
+          step={5}
+          {current}
+          type={'organizational'}
+        />
+        <Rubric
+          questionnaires={rubrics().investment}
+          step={6}
+          {current}
+          type={'investment'}
+        />
+      </form>
+    </div>
+    <div class="ml-auto flex gap-2">
+      <Button variant="secondary" onclick={previous} disabled={current === 0}>Previous</Button>
+      {#if current === 5}
+        <Button onclick={() => form.submit()}>Submit</Button>
+      {:else}
+        <Button onclick={next} disabled={current === 6}>Next</Button>
+      {/if}
+    </div>
   </div>
 {/snippet}
