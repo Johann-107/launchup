@@ -11,6 +11,7 @@ import { ReadinessLevel } from 'src/entities/readiness-level.entity';
 import { StartupReadinessLevel } from 'src/entities/startup-readiness-level.entity';
 import { AiService } from 'src/ai/ai.service';
 import { RnaChatHistory } from 'src/entities/rna-chat-history.entity';
+import { ReadinessType } from 'src/entities/enums/readiness-type.enum';
 
 @Injectable()
 export class RnaService {
@@ -122,7 +123,14 @@ export class RnaService {
     }
 
     // 7. Build readiness level data for prompt
-    const readinessLevelData = startupReadinessLevels.map((srl, index) => ({
+    const readinessLevelByType = new Map(
+      startupReadinessLevels.map((startupReadinessLevel) => [
+        startupReadinessLevel.readinessLevel.readinessType,
+        startupReadinessLevel.readinessLevel.level,
+      ]),
+    );
+
+    const readinessLevelData = startupReadinessLevels.map((srl) => ({
       type: srl.readinessLevel.readinessType,
       level: srl.readinessLevel.level,
       hasRNA: existingRNAs.some(
@@ -130,12 +138,12 @@ export class RnaService {
       ),
     }));
 
-    const trl = startupReadinessLevels[0]?.readinessLevel.level || 0;
-    const mrl = startupReadinessLevels[1]?.readinessLevel.level || 0;
-    const arl = startupReadinessLevels[2]?.readinessLevel.level || 0;
-    const orl = startupReadinessLevels[3]?.readinessLevel.level || 0;
-    const rrl = startupReadinessLevels[4]?.readinessLevel.level || 0;
-    const irl = startupReadinessLevels[5]?.readinessLevel.level || 0;
+    const trl = readinessLevelByType.get(ReadinessType.T) || 0;
+    const mrl = readinessLevelByType.get(ReadinessType.M) || 0;
+    const arl = readinessLevelByType.get(ReadinessType.A) || 0;
+    const orl = readinessLevelByType.get(ReadinessType.O) || 0;
+    const rrl = readinessLevelByType.get(ReadinessType.R) || 0;
+    const irl = readinessLevelByType.get(ReadinessType.I) || 0;
 
     const basePrompt = `
       Given these data:
@@ -193,9 +201,9 @@ export class RnaService {
           rl.readinessLevel.readinessType === generatedRNA.readiness_level_type,
       );
 
-      if (matchingReadinessLevel) {
+      if (matchingReadinessLevel && generatedRNA.rna?.trim()) {
         const newRNA = new StartupRNA();
-        newRNA.rna = generatedRNA.rna;
+        newRNA.rna = generatedRNA.rna.trim();
         newRNA.isAiGenerated = true; // Mark as AI generated
         newRNA.startup = startup;
         newRNA.readinessLevel = matchingReadinessLevel.readinessLevel;

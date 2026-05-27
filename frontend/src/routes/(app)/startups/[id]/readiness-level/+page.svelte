@@ -10,6 +10,8 @@
   import { Skeleton } from '$lib/components/ui/skeleton/index.js';
   import { Can } from '$lib/components/shared';
   import ReadinessDashboard from '$lib/components/dashboard/ReadinessDashboard.svelte';
+  import axiosInstance from '$lib/axios';
+  import { toast } from 'svelte-sonner';
 
   const { data } = $props();
   const { access, startupId, role } = data;
@@ -43,6 +45,25 @@
   const { isLoading, isError } = $derived(
     useQueriesState($readinessLevelQueries)
   );
+
+  const readinessTypeOptions = [
+    'Technology',
+    'Acceptance',
+    'Market',
+    'Organizational',
+    'Regulatory',
+    'Investment'
+  ] as const;
+
+  let baselineScores = $state<Record<(typeof readinessTypeOptions)[number], number>>({
+    Technology: 1,
+    Acceptance: 1,
+    Market: 1,
+    Organizational: 1,
+    Regulatory: 1,
+    Investment: 1
+  });
+  let savingBaselineScores = $state(false);
 
   const isRated = $derived(() => {
     const q = $readinessLevelQueries[2];
@@ -180,6 +201,43 @@
     selectedReadinessTab = tab;
   };
 
+  const submitBaselineScores = async () => {
+    savingBaselineScores = true;
+
+    try {
+      await Promise.all(
+        readinessTypeOptions.map((readinessType) =>
+          axiosInstance.post(
+            `/readinesslevel/startup/${startupId}/rate`,
+            {
+              readinessType,
+              level: baselineScores[readinessType]
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${access}`
+              }
+            }
+          )
+        )
+      );
+
+      toast.success('Baseline scores saved');
+      await Promise.all([
+        $readinessLevelQueries[2].refetch(),
+        $readinessLevelQueries[3].refetch(),
+        $readinessLevelQueries[0].refetch()
+      ]);
+    } catch (error: any) {
+      console.error(error);
+      const message =
+        error.response?.data?.message || 'Failed to save baseline scores';
+      toast.error(message);
+    } finally {
+      savingBaselineScores = false;
+    }
+  };
+
   let form: HTMLFormElement;
 </script>
 
@@ -199,13 +257,13 @@
   {:else if isRated()}
     {@render rated()}
   {:else}
-    <div class="mt-10 text-center text-2xl font-bold">
-      {#if isMentor(role)}
-        <p>You haven't rated this startup yet...</p>
-      {:else}
+    {#if isMentor(role)}
+      {@render mentor()}
+    {:else}
+      <div class="mt-10 text-center text-2xl font-bold">
         <p>Looks like you haven't been rated yet...</p>
-      {/if}
-    </div>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -327,55 +385,47 @@
 {/snippet}
 
 {#snippet mentor()}
-  <div class="flex h-full flex-col gap-3">
-    <Stepper {current} />
-    <div class="flex h-full flex-col overflow-scroll">
-      <form method="post" bind:this={form} class="flex flex-1 flex-col">
-        <Rubric
-          questionnaires={rubrics().technology}
-          step={1}
-          {current}
-          type={'technology'}
-        />
-        <Rubric
-          questionnaires={rubrics().acceptance}
-          step={2}
-          {current}
-          type={'acceptance'}
-        />
-        <Rubric
-          questionnaires={rubrics().market}
-          step={3}
-          {current}
-          type={'market'}
-        />
-        <Rubric
-          questionnaires={rubrics().regulatory}
-          step={4}
-          {current}
-          type={'regulatory'}
-        />
-        <Rubric
-          questionnaires={rubrics().organizational}
-          step={5}
-          {current}
-          type={'organizational'}
-        />
-        <Rubric
-          questionnaires={rubrics().investment}
-          step={6}
-          {current}
-          type={'investment'}
-        />
-      </form>
+  <div class="mx-auto flex w-full max-w-4xl flex-col gap-4 rounded-2xl border bg-background p-6 shadow-sm">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Mentor action</p>
+      <h2 class="mt-2 text-2xl font-bold">Assign baseline scores</h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Set one baseline level per readiness dimension. These values unlock the weighted readiness dashboard and RNA generation.
+      </p>
     </div>
-    <div class="ml-auto flex gap-2">
-      <Button variant="secondary" onclick={previous} disabled={current === 0}>Previous</Button>
-      {#if current === 5}
-        <Button onclick={() => form.submit()}>Submit</Button>
-      {:else}
-        <Button onclick={next} disabled={current === 6}>Next</Button>
-      {/if}
+
+    <div class="grid gap-4 md:grid-cols-2">
+      {#each readinessTypeOptions as readinessType}
+        <label class="flex flex-col gap-2 rounded-xl border p-4">
+          <span class="text-sm font-semibold">{readinessType}</span>
+          <select
+            class="h-10 rounded-md border bg-background px-3 text-sm"
+            value={baselineScores[readinessType]}
+            onchange={(event) => {
+              baselineScores = {
+                ...baselineScores,
+                [readinessType]: Number(
+                  (event.currentTarget as HTMLSelectElement).value
+                )
+              };
+            }}
+          >
+            {#each Array.from({ length: 9 }, (_, index) => index + 1) as level}
+              <option value={level}>Level {level}</option>
+            {/each}
+          </select>
+        </label>
+      {/each}
+    </div>
+
+    <div class="flex justify-end">
+      <Button onclick={submitBaselineScores} disabled={savingBaselineScores}>
+        {#if savingBaselineScores}
+          Saving...
+        {:else}
+          Save baseline scores
+        {/if}
+      </Button>
     </div>
   </div>
 {/snippet}

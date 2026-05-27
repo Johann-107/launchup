@@ -14,7 +14,7 @@ const AI_GROUNDING_INSTRUCTION =
 const readinessRnaSchema = z.array(
   z.object({
     readiness_level_type: z.string(),
-    rna: z.string(),
+    rna: z.string().nullable(),
   }),
 );
 
@@ -204,7 +204,7 @@ export class AiService {
 
   async generateRNAsFromPrompt(
     prompt: string,
-  ): Promise<{ readiness_level_type: string; rna: string }[]> {
+  ): Promise<{ readiness_level_type: string; rna: string | null }[]> {
     return this.callAiExpectJson({
       prompt,
       schema: readinessRnaSchema,
