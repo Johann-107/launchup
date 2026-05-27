@@ -32,8 +32,7 @@
   let localSelections: Record<string, string> = {};
 
   function selectOption(category: string, questionId: number) {
-    localSelections[category] = `${questionId}`;
-    localSelections = localSelections; // trigger reactivity
+    localSelections = { ...localSelections, [category]: `${questionId}` };
   }
 
   function isSelected(category: string, questionId: number): boolean {
@@ -67,7 +66,7 @@
                 {isSelected(category.category, question.id)
                   ? 'border-[#6366f1]/40 bg-[#6366f1]/5 text-slate-800 dark:border-[#6366f1]/30 dark:bg-[#6366f1]/10 dark:text-white/90'
                   : 'border-slate-200/50 bg-white/30 text-slate-600 hover:border-slate-300 hover:bg-white/60 dark:border-white/5 dark:bg-white/5 dark:text-white/60 dark:hover:border-white/10'}"
-              on:click|preventDefault={() => selectOption(category.category, question.id)}
+              onclick={(e) => { e.preventDefault(); selectOption(category.category, question.id); }}
             >
               <div
                 class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200
