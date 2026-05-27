@@ -59,6 +59,38 @@
     statusMap[startup?.qualificationStatus] ?? statusMap[1]
   );
 
+  // Calculate tier based on readiness levels
+  const calculatedTier = $derived(() => {
+    if (!startup?.readinessLevels || startup.readinessLevels.length === 0) return 'Pending';
+    
+    // Sum the levels of all associated readiness levels
+    let totalScore = 0;
+    let count = 0;
+    
+    for (const rl of startup.readinessLevels) {
+      if (rl.readinessLevel?.level !== undefined) {
+        totalScore += Number(rl.readinessLevel.level);
+        count++;
+      }
+    }
+    
+    if (count === 0) return 'Pending';
+    
+    const avg = totalScore / count;
+    
+    if (avg >= 7) return 'Strong';
+    if (avg >= 4) return 'Developing';
+    return 'Early';
+  });
+  
+  const tier = $derived(calculatedTier());
+  
+  const getTierColor = (t: string) => {
+    if (t === 'Strong') return 'bg-green-500/10 text-green-500 border-green-500/20';
+    if (t === 'Developing') return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    if (t === 'Early') return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+    return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+  };
 </script>
 
 <a
@@ -100,6 +132,12 @@
               ? 'Active'
               : status.label}
           </Badge>
+        </div>
+        <div class="mb-3 flex items-center gap-2 text-xs font-medium">
+          <span>Overall Tier:</span>
+          <div class={`rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wider ${getTierColor(tier)}`}>
+            {tier}
+          </div>
         </div>
         <div class="mb-1 flex items-center gap-2 text-xs">
           Initiatives

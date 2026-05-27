@@ -11,6 +11,7 @@ import { StartupReadinessLevel } from './entities/startup-readiness-level.entity
 import { QualificationStatus } from './entities/enums/qualification-status.enum';
 import { Role } from './entities/enums/role.enum';
 import { ReadinessType } from './entities/enums/readiness-type.enum';
+import { CapsuleProposal } from './entities/capsule-proposal.entity';
 
 async function seedLocalDemoData(orm: MikroORM) {
   const em = orm.em.fork();
@@ -142,8 +143,7 @@ async function seedLocalDemoData(orm: MikroORM) {
       );
     }
   }
-
-  await em.flush();
+  // The original startup initialization remains unmodified
 }
 
 async function bootstrap() {

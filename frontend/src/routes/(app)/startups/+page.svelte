@@ -209,11 +209,12 @@
   </div>
   <Can role={['Startup']} userRole={role}>
     <div class="flex gap-5">
-      <a href="/apply">
-        <Button class="flex items-center justify-center gap-2 rounded-lg">
-          <RocketIcon class="h-4 w-4" /> Apply
-        </Button>
-      </a>
+      <Button
+        class="flex items-center justify-center gap-2 rounded-xl bg-[#6366f1] text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all duration-200"
+        onclick={toggleApplicationForm}
+      >
+        <RocketIcon class="h-4 w-4" /> Apply
+      </Button>
     </div>
   </Can>
 </div>
@@ -427,17 +428,18 @@
       {search ? 'Try adjusting your search criteria' : 'Get started by adding your first startup'}
     </p>
     <Can role={['Startup']} userRole={role}>
-      <a href="/apply">
-        <Button class="gap-2">
-          <RocketIcon class="h-4 w-4" /> Apply Now
-        </Button>
-      </a>
+      <Button
+        class="gap-2 rounded-xl bg-[#6366f1] text-white shadow-[0_4px_16px_rgba(99,102,241,0.3)]"
+        onclick={toggleApplicationForm}
+      >
+        <RocketIcon class="h-4 w-4" /> Apply Now
+      </Button>
     </Can>
   </div>
 {/if}
 
 <Dialog.Root open={showApplicationForm} onOpenChange={toggleApplicationForm}>
-  <Dialog.Content class="h-4/5 max-w-[800px]">
+  <Dialog.Content class="h-[90vh] max-w-4xl overflow-hidden rounded-3xl border-slate-200/70 bg-white/95 p-6 shadow-[0_32px_80px_rgba(15,23,42,0.2)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/95">
     <Application access={data.access!} startup={selectedStartup} />
   </Dialog.Content>
 </Dialog.Root>

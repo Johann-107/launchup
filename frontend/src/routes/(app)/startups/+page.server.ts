@@ -3,9 +3,7 @@ import type { PageServerLoad } from './$types';
 import { PUBLIC_API_URL } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-  if (locals.user.role === 'Manager') {
-    redirect(302, '/applications');
-  }
+  // Removed redirect so Managers can view the startups tiering dashboard
   const access = cookies.get('Access')!;
   const res = await fetch(`${PUBLIC_API_URL}/startups/startups`, {
     headers: { Authorization: `Bearer ${access}` }

@@ -8,7 +8,8 @@
   import Rubric from '$lib/components/startups/readiness/rubric.svelte';
   import * as Card from '$lib/components/ui/card/index.js';
   import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-  import { Can, RadarChartV2 } from '$lib/components/shared';
+  import { Can } from '$lib/components/shared';
+  import ReadinessDashboard from '$lib/components/dashboard/ReadinessDashboard.svelte';
 
   const { data } = $props();
   const { access, startupId, role } = data;
@@ -277,43 +278,7 @@
       </div>
     </Can>
     {#if selectedTab === 'chart'}
-      <Card.Root class="h-full">
-        <Card.Header class="items-center">
-          <Card.Title>Readiness Level - Radar Chart</Card.Title>
-        </Card.Header>
-        <Card.Content class="flex items-center justify-center">
-          <RadarChartV2
-            id={Number(startupId)}
-            min={0}
-            max={9}
-            labels={[
-              'Technology',
-              'Organizational',
-              'Market',
-              'Regulatory',
-              'Acceptance',
-              'Investment'
-            ]}
-            data={[
-              readiness().Technology,
-              readiness().Organizational,
-              readiness().Market,
-              readiness().Regulatory,
-              readiness().Acceptance,
-              readiness().Investment
-            ]}
-          />
-        </Card.Content>
-        <!-- <Card.Footer class="flex-col gap-2 text-sm">
-					<div class="flex items-center gap-2 font-medium leading-none">
-						Trending up by 5.2% this month
-						<TrendingUp class="size-4" />
-					</div>
-					<div class="text-muted-foreground flex items-center gap-2 leading-none">
-						January - June 2024
-					</div>
-				</Card.Footer> -->
-      </Card.Root>
+      <ReadinessDashboard startupId={Number(startupId)} />
     {:else}
       <div class="flex h-full flex-col gap-3">
         <div class="flex h-full flex-col overflow-scroll">

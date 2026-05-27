@@ -180,6 +180,7 @@ export class RnaService {
       - readiness_level_type should only be one of: ${missingReadinessTypes.join(', ')}
       - rna has a max length of 500
       - rna should be specific to that readiness type only.
+      - IMPORTANT: If you do not have enough factual information from the Capsule Proposal to generate a meaningful RNA for a specific readiness type, return null for its "rna" value instead of inventing facts.
       `;
 
     const generatedRNAs = await this.aiService.generateRNAsFromPrompt(prompt);
