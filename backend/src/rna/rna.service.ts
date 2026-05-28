@@ -210,6 +210,15 @@ export class RnaService {
 
         await this.em.persist(newRNA);
         createdRNAs.push(newRNA);
+
+        await this.aiService.recordAiRecommendation({
+          startupId: startup.id,
+          dimensionKey: matchingReadinessLevel.readinessLevel.readinessType,
+          recommendationKind: 'RNA',
+          content: newRNA.rna,
+          validationStatus: 'validated',
+          confidenceStatus: 'high-confidence',
+        });
       }
     }
     await this.em.flush();

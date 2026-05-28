@@ -8,6 +8,9 @@ import { StartupReadinessLevel } from 'src/entities/startup-readiness-level.enti
 import { Startup } from 'src/entities/startup.entity';
 import { StartupApplicationDto } from 'src/startup/dto/startup.dto';
 import { z } from 'zod';
+import { AiRecommendation } from 'src/entities/ai-recommendation.entity';
+import { AiBiasAudit } from 'src/entities/ai-bias-audit.entity';
+import { RagContext } from 'src/entities/rag-context.entity';
 
 const AI_GROUNDING_INSTRUCTION =
   'Only use facts explicitly present in the user-provided input. Never invent names, numbers, dates, or organizations. If you are uncertain about a field, return null instead of guessing.';
@@ -43,6 +46,12 @@ const readinessRoadblockSchema = z.array(
   }),
 );
 
+const biasReviewSchema = z.object({
+  corrected_score: z.coerce.number().int().min(1),
+  bias_flagged: z.boolean(),
+  justification: z.string(),
+});
+
 @Injectable()
 export class AiService {
   private readonly ai: GoogleGenAI;
@@ -52,6 +61,7 @@ export class AiService {
     private config: ConfigService,
     private metrics: AiMetricsService,
     private baselineService: BaselineService,
+    private readonly em: EntityManager,
   ) {
     this.ai = new GoogleGenAI({
       apiKey: this.config.get<string>('GEMINI_API_KEY'),
@@ -67,6 +77,195 @@ export class AiService {
       // on error return a conservative mapping
       return { z: 0, scaled: Math.max(1, Math.min(9, Math.round(score))) };
     }
+  }
+
+  async reviewBiasScore(input: {
+    dimensionKey: string;
+    rawScore: number;
+    maxScore: number;
+    context: string;
+  }): Promise<{ correctedScore: number; biasFlagged: boolean; justification: string }> {
+    const normalized = await this.normalizeAiScore(input.rawScore);
+    const baselineScore = Math.max(1, Math.min(input.maxScore, Math.round(normalized.scaled)));
+    const prompt = `
+      You are reviewing a startup assessment score for possible bias.
+      Dimension: ${input.dimensionKey}
+      Raw score: ${input.rawScore}
+      Baseline normalized score: ${baselineScore}
+      Maximum allowed score: ${input.maxScore}
+      Context: ${input.context}
+
+      Correct the score only if the raw score appears inflated, understated, or inconsistent with the context.
+      Return JSON with corrected_score, bias_flagged, and justification.
+      corrected_score must be between 1 and ${input.maxScore}.
+    `;
+
+    try {
+      const review = await this.callAiExpectJson({
+        prompt,
+        schema: biasReviewSchema,
+        fallback: {
+          corrected_score: baselineScore,
+          bias_flagged: baselineScore !== input.rawScore,
+          justification: 'Baseline normalization applied because the model review could not be parsed.',
+        },
+        correctivePrompt:
+          'Return valid JSON only. Keep the corrected score within the allowed range and explain the adjustment briefly.',
+      });
+
+      const correctedScore = Math.max(
+        1,
+        Math.min(input.maxScore, Math.round(review.corrected_score || baselineScore)),
+      );
+
+      return {
+        correctedScore,
+        biasFlagged: review.bias_flagged || correctedScore !== input.rawScore,
+        justification: review.justification || 'Bias review completed.',
+      };
+    } catch {
+      return {
+        correctedScore: baselineScore,
+        biasFlagged: baselineScore !== input.rawScore,
+        justification: 'Baseline normalization applied because the model review failed.',
+      };
+    }
+  }
+
+  async recordAiRecommendation(input: {
+    startupId?: number;
+    dimensionKey: string;
+    recommendationKind: string;
+    content: string;
+    validationStatus?: string;
+    confidenceStatus?: string;
+    notes?: string | null;
+  }) {
+    const recommendation = this.em.create(AiRecommendation, {
+      startup: input.startupId ? this.em.getReference(Startup, input.startupId) : undefined,
+      dimensionKey: input.dimensionKey,
+      recommendationKind: input.recommendationKind,
+      content: input.content,
+      validationStatus: input.validationStatus ?? 'validated',
+      confidenceStatus: input.confidenceStatus ?? 'high-confidence',
+      notes: input.notes ?? null,
+      createdAt: new Date(),
+    });
+
+    this.em.persist(recommendation);
+    await this.em.flush();
+    return recommendation;
+  }
+
+  async recordBiasAudit(input: {
+    startupId?: number;
+    dimensionKey: string;
+    rawScore: number;
+    correctedScore: number;
+    deviation: number;
+    threshold: number;
+    biasFlagged?: boolean;
+    biasStatus?: string;
+    justification?: string | null;
+  }) {
+    const audit = this.em.create(AiBiasAudit, {
+      startup: input.startupId ? this.em.getReference(Startup, input.startupId) : undefined,
+      dimensionKey: input.dimensionKey,
+      rawScore: input.rawScore,
+      correctedScore: input.correctedScore,
+      deviation: input.deviation,
+      threshold: input.threshold,
+      biasFlagged: input.biasFlagged ?? false,
+      biasStatus: input.biasStatus ?? 'normalized',
+      justification: input.justification ?? null,
+      createdAt: new Date(),
+    });
+
+    this.em.persist(audit);
+    await this.em.flush();
+    return audit;
+  }
+
+  async recordRagContext(input: {
+    startupId?: number;
+    sourceType: string;
+    title: string;
+    content: string;
+    metadata?: Record<string, unknown> | null;
+    confidence?: number;
+  }) {
+    const ragContext = this.em.create(RagContext, {
+      startup: input.startupId ? this.em.getReference(Startup, input.startupId) : undefined,
+      sourceType: input.sourceType,
+      title: input.title,
+      content: input.content,
+      metadata: input.metadata ?? null,
+      confidence: input.confidence ?? null,
+      createdAt: new Date(),
+    });
+
+    this.em.persist(ragContext);
+    await this.em.flush();
+    return ragContext;
+  }
+
+  private scoreRagMatch(query: string, candidate: string) {
+    const tokenize = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((token) => token.length > 2);
+
+    const queryTokens = new Set(tokenize(query));
+    const candidateTokens = new Set(tokenize(candidate));
+
+    if (!queryTokens.size || !candidateTokens.size) {
+      return 0;
+    }
+
+    let overlap = 0;
+    for (const token of queryTokens) {
+      if (candidateTokens.has(token)) {
+        overlap += 1;
+      }
+    }
+
+    return overlap / Math.max(queryTokens.size, candidateTokens.size);
+  }
+
+  async getRelevantRagContexts(startup: Startup, em: EntityManager) {
+    const contexts = await em.find(RagContext, {}, { orderBy: { createdAt: 'DESC' } });
+    const query = [
+      startup.name,
+      startup.links ?? '',
+      startup.groupName ?? '',
+      startup.universityName ?? '',
+      startup.capsuleProposal?.title ?? '',
+      startup.capsuleProposal?.description ?? '',
+      startup.capsuleProposal?.problemStatement ?? '',
+      startup.capsuleProposal?.targetMarket ?? '',
+      startup.capsuleProposal?.solutionDescription ?? '',
+      startup.capsuleProposal?.scope ?? '',
+      startup.capsuleProposal?.methodology ?? '',
+    ]
+      .join(' ')
+      .trim();
+
+    return contexts
+      .map((context) => ({
+        context,
+        score: this.scoreRagMatch(query, `${context.title} ${context.content}`),
+      }))
+      .filter(({ score }) => score > 0)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 3)
+      .map(({ context, score }) => ({
+        sourceType: context.sourceType,
+        title: context.title,
+        content: context.content,
+        confidence: context.confidence ?? score,
+      }));
   }
 
   private groundPrompt(prompt: string) {
@@ -344,6 +543,12 @@ export class AiService {
     const orl = startupReadinessLevels[3]?.readinessLevel.level || 0;
     const rrl = startupReadinessLevels[4]?.readinessLevel.level || 0;
     const irl = startupReadinessLevels[5]?.readinessLevel.level || 0;
+    const ragContexts = await this.getRelevantRagContexts(startup, em);
+    const ragBlock = ragContexts.length
+      ? `\nVerified context retrieved from similar startup records:\n${ragContexts
+          .map((context) => `- [${context.sourceType}] ${context.title}: ${context.content}`)
+          .join('\n')}`
+      : '\nVerified context retrieved from similar startup records: none found';
 
     return `
       Given these data:
@@ -372,6 +577,7 @@ export class AiService {
       ORL ${orl}
       RRL ${rrl}
       IRL ${irl}
+        ${ragBlock}
   `;
   }
 
