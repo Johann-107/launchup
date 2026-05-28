@@ -1,7 +1,10 @@
 import { EntityManager } from '@mikro-orm/core';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ReadinessType } from 'src/entities/enums/readiness-type.enum';
 import { StartupReadinessLevel } from 'src/entities/startup-readiness-level.entity';
+import { ReadinessEvaluation } from 'src/entities/readiness-evaluation.entity';
+import { ReadinessGap } from 'src/entities/readiness-gap.entity';
+import { TierConfig } from 'src/entities/tier-config.entity';
 
 // Team readiness gets the highest weight because execution quality and decision speed
 // determine whether the startup can turn plans into consistent progress.
@@ -101,6 +104,8 @@ export type ReadinessScoreResponse = {
 
 @Injectable()
 export class ReadinessService {
+  private readonly logger = new Logger(ReadinessService.name);
+
   constructor(private readonly em: EntityManager) {}
 
   getWeightRationale() {
@@ -178,12 +183,69 @@ export class ReadinessService {
         };
       });
 
-    return {
+    const response: ReadinessScoreResponse = {
       compositeScore,
       tierLabel,
       dimensions,
       recommendations,
       weightRationale: this.getWeightRationale(),
     };
+
+    try {
+      // Try to load persisted tier thresholds from the database; fall back to defaults
+      const persisted = await this.em.find(TierConfig, {});
+      const defaultThresholds: Record<string, number> = {
+        Strong: 85,
+        Ready: 70,
+        Emerging: 55,
+        Developing: 40,
+        Early: 25,
+      };
+
+      const thresholdByTier: Record<string, number> = persisted.length
+        ? persisted.reduce((acc, cfg) => {
+            acc[cfg.tierLabel] = cfg.threshold;
+            return acc;
+          }, {} as Record<string, number>)
+        : defaultThresholds;
+
+      const evaluation = this.em.create(ReadinessEvaluation, {
+        startup: startupId,
+        compositeScore,
+        tierLabel,
+        isProvisional: dimensions.some((dimension) => dimension.score === 0),
+        warning: dimensions.some((dimension) => dimension.score === 0)
+          ? 'One or more readiness dimensions are missing, so the score should be treated as provisional.'
+          : null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      this.em.persist(evaluation);
+      await this.em.flush();
+
+      const tierThreshold = thresholdByTier[tierLabel] ?? 25;
+      for (const dimension of dimensions) {
+        const gap = Math.max(0, tierThreshold - dimension.percent);
+        this.em.persist(
+          this.em.create(ReadinessGap, {
+            evaluation,
+            dimensionKey: dimension.key,
+            score: dimension.percent,
+            tierThreshold,
+            shortfall: gap,
+            createdAt: new Date(),
+          }),
+        );
+      }
+
+      await this.em.flush();
+    } catch (error) {
+      this.logger.warn(
+        `Failed to persist readiness evaluation for startup ${startupId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    return response;
   }
 }

@@ -298,10 +298,22 @@ export class RnsService {
 
       for (let i = 0; i < aiTasks.length; i++) {
         const task = aiTasks[i];
+        const reviewedTarget = await this.aiService.reviewBiasScore({
+          dimensionKey: readinessType,
+          rawScore: Number(task.target_level) || targetReadinessLevel[readinessType] + 1,
+          maxScore: 9,
+          context: [
+            `Startup: ${startup.name}`,
+            `Readiness type: ${readinessType}`,
+            `RNA: ${rna.rna ?? ''}`,
+            `Task description: ${task.description}`,
+          ].join('\n'),
+        });
+
         const targetLevel = await this.em.findOne(ReadinessLevel, {
           readinessType: readinessType,
           level: Math.min(
-            Number(task.target_level) ||
+            reviewedTarget.correctedScore ||
               targetReadinessLevel[readinessType] + 1,
             9,
           ),
@@ -325,6 +337,30 @@ export class RnsService {
 
         this.em.persist(newRns);
         createdRns.push(newRns);
+
+        await this.aiService.recordAiRecommendation({
+          startupId: startup.id,
+          dimensionKey: readinessType,
+          recommendationKind: 'RNS',
+          content: task.description,
+          validationStatus: 'validated',
+          confidenceStatus: 'high-confidence',
+        });
+
+        const rawTarget = Number(task.target_level);
+        const normalizedTarget = Number((task as any).target_level_normalized ?? rawTarget);
+        const deviation = Math.abs(normalizedTarget - rawTarget);
+        await this.aiService.recordBiasAudit({
+          startupId: startup.id,
+          dimensionKey: readinessType,
+          rawScore: Number(task.target_level) || targetReadinessLevel[readinessType] + 1,
+          correctedScore: reviewedTarget.correctedScore,
+          deviation: Math.abs(reviewedTarget.correctedScore - (Number(task.target_level) || targetReadinessLevel[readinessType] + 1)),
+          threshold: 2,
+          biasFlagged: reviewedTarget.biasFlagged,
+          biasStatus: reviewedTarget.biasFlagged ? 'flagged' : 'normalized',
+          justification: reviewedTarget.justification,
+        });
       }
     }
     await this.em.flush(); // Flush all new RNS after the loop

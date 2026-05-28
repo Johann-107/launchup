@@ -17,8 +17,7 @@ import { AiService } from 'src/ai/ai.service';
 import { StartupService } from './startup.service';
 import { JwtGuard } from 'src/auth/guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadedFile, BadRequestException } from '@nestjs/common';
-import * as PdfParse from 'pdf-parse';
+import { UploadedFile } from '@nestjs/common';
 import { UpdateStartupDto } from '../admin/dto/update-startup.dto';
 import {
   StartupApplicationDto,
@@ -99,20 +98,10 @@ export class StartupController {
   @UseInterceptors(FileInterceptor('capsuleProposal'))
   async getCapsuleProposal(@UploadedFile() file: Express.Multer.File) {
     try {
-      if (!file) {
-        throw new BadRequestException('No file uploaded');
-      }
-
-      const data = await PdfParse(file.buffer);
-      let res = await this.aiService.getCapsuleProposalInfo(data.text);
-
-      if (res) {
-        res = res.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        return JSON.parse(res);
-      }
+      return await this.startupService.parseCapsuleProposal(file);
     } catch (error) {
       console.error(error);
-      throw new BadRequestException('Failed to process PDF');
+      throw new Error('Failed to process capsule proposal');
     }
   }
 
