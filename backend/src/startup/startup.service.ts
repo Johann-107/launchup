@@ -60,6 +60,7 @@ export class StartupService {
               'capsuleProposal',
               'mentors',
               'readinessLevels.readinessLevel',
+              'readinessEvaluations',
               'uratQuestionAnswers.uratQuestion',
               'calculatorQuestionAnswers.question',
               'waitlistMessages',
@@ -70,19 +71,19 @@ export class StartupService {
         return await this.em.find(
           Startup,
           { mentors: { id: userId } },
-          { populate: ['mentors', 'capsuleProposal', 'readinessLevels.readinessLevel'] },
+          { populate: ['mentors', 'capsuleProposal', 'readinessLevels.readinessLevel', 'readinessEvaluations'] },
         );
       case Role.Admin:
       case Role.Manager:
         return await this.em.findAll(Startup, {
-          populate: ['user', 'mentors', 'members', 'capsuleProposal', 'readinessLevels.readinessLevel'],
+          populate: ['user', 'mentors', 'members', 'capsuleProposal', 'readinessLevels.readinessLevel', 'readinessEvaluations'],
         });
     }
   }
 
   async findAll(): Promise<Startup[]> {
     return this.em.findAll(Startup, {
-      populate: ['user', 'mentors', 'members', 'capsuleProposal'],
+      populate: ['user', 'mentors', 'members', 'capsuleProposal', 'readinessEvaluations'],
     });
   }
 
@@ -98,6 +99,7 @@ export class StartupService {
           'waitlistMessages',
           'waitlistMessages.manager',
           'mentors',
+          'readinessEvaluations',
         ],
       },
     );

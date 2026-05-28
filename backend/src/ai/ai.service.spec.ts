@@ -18,6 +18,10 @@ describe('AiService', () => {
         get: jest.fn(),
       } as unknown as ConfigService,
       metrics as unknown as AiMetricsService,
+      {
+        normalizeScore: jest.fn().mockResolvedValue({ scaled: 5, z: 0 }),
+      } as any,
+      {} as any,
     );
 
     (service as unknown as { ai: { models: { generateContent: jest.Mock } } }).ai = {

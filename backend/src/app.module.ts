@@ -34,13 +34,15 @@ import { Recommendation } from './entities/recommendation.entity';
 import { RagRetrievalLog } from './entities/rag-retrieval-log.entity';
 import { VectorEmbedding } from './entities/vector-embeddings.entity'; // if you plan to use it
 
+import config from './mikro-orm.config';
+
 @Module({
   controllers: [AppController],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MikroOrmModule.forRoot(),
+    MikroOrmModule.forRoot(config as any),
     MikroOrmModule.forFeature({
       entities: [
         User,

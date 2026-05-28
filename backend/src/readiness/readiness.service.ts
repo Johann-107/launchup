@@ -194,25 +194,29 @@ export class ReadinessService {
     try {
       // Try to load persisted tier thresholds from the database; fall back to defaults
       const persisted = await this.em.find(TierConfig, {});
-      const defaultThresholds: Record<string, number> = {
-        Strong: 85,
-        Ready: 70,
-        Emerging: 55,
-        Developing: 40,
-        Early: 25,
-      };
+      
+      const sortedTiers = persisted.sort((a, b) => b.threshold - a.threshold);
 
-      const thresholdByTier: Record<string, number> = persisted.length
-        ? persisted.reduce((acc, cfg) => {
-            acc[cfg.tierLabel] = cfg.threshold;
-            return acc;
-          }, {} as Record<string, number>)
-        : defaultThresholds;
+      let computedTierLabel = 'Pending';
+      let tierThreshold = 0;
+      if (sortedTiers.length > 0) {
+        for (const tier of sortedTiers) {
+          if (compositeScore >= tier.threshold) {
+            computedTierLabel = tier.tierLabel;
+            tierThreshold = tier.threshold;
+            break;
+          }
+        }
+      } else {
+        computedTierLabel =
+          compositeScore >= 85 ? 'Strong' : compositeScore >= 70 ? 'Ready' : compositeScore >= 55 ? 'Emerging' : compositeScore >= 40 ? 'Developing' : 'Early';
+        tierThreshold = compositeScore >= 85 ? 85 : compositeScore >= 70 ? 70 : compositeScore >= 55 ? 55 : compositeScore >= 40 ? 40 : 25;
+      }
 
       const evaluation = this.em.create(ReadinessEvaluation, {
         startup: startupId,
         compositeScore,
-        tierLabel,
+        tierLabel: computedTierLabel,
         isProvisional: dimensions.some((dimension) => dimension.score === 0),
         warning: dimensions.some((dimension) => dimension.score === 0)
           ? 'One or more readiness dimensions are missing, so the score should be treated as provisional.'
@@ -224,7 +228,7 @@ export class ReadinessService {
       this.em.persist(evaluation);
       await this.em.flush();
 
-      const tierThreshold = thresholdByTier[tierLabel] ?? 25;
+      // Using computed tierThreshold from above
       for (const dimension of dimensions) {
         const gap = Math.max(0, tierThreshold - dimension.percent);
         this.em.persist(

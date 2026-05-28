@@ -224,6 +224,22 @@ export class AdminService {
       created.push(ent);
     }
     await this.em.flush();
+
+    // Retroactively apply the new tier labels to all existing readiness evaluations
+    if (configs.length > 0) {
+      const sortedConfigs = [...configs].sort((a, b) => b.threshold - a.threshold);
+      let caseSql = 'CASE ';
+      for (const cfg of sortedConfigs) {
+        // Escape single quotes just in case
+        const safeLabel = cfg.tierLabel.replace(/'/g, "''");
+        caseSql += `WHEN composite_score >= ${cfg.threshold} THEN '${safeLabel}' `;
+      }
+      caseSql += `ELSE 'Pending' END`;
+      
+      const conn = this.em.getConnection();
+      await conn.execute(`UPDATE readiness_evaluations SET tier_label = ${caseSql}`);
+    }
+
     await this.log('Admin', `Updated tier configs`, 'admin');
     return created;
   }

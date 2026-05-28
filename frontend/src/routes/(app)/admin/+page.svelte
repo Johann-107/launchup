@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Users, Rocket, ClipboardList } from 'lucide-svelte';
+  import { Users, Rocket, ClipboardList, Layers, Scan, Scale } from 'lucide-svelte';
   export let data: {
     recent: Array<{ date: string; action: string; details: string }>;
   };
@@ -26,6 +26,27 @@
       href: '/admin/assessments',
       icon: ClipboardList,
       color: 'text-green-500'
+    },
+    {
+      title: 'Dynamic Tiers',
+      description: 'Configure threshold & mathematical weights for startup tiers',
+      href: '/admin/tiers',
+      icon: Layers,
+      color: 'text-amber-500'
+    },
+    {
+      title: 'OCR Documents',
+      description: 'Review document legibility & computer vision parses',
+      href: '/admin/ocr-documents',
+      icon: Scan,
+      color: 'text-cyan-500'
+    },
+    {
+      title: 'AI Bias Audits',
+      description: 'Review and override AI evaluation bias normalizations',
+      href: '/admin/ai/bias-audits',
+      icon: Scale,
+      color: 'text-rose-500'
     }
   ];
 </script>

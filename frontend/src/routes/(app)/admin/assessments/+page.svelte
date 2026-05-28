@@ -350,29 +350,20 @@
         <Label>Field Type</Label>
         <Select.Root type="single" bind:value={editingField.answerType}>
           <Select.Trigger class="w-full">
-            {#snippet children()}
-              {@const SelectedIcon =
-                FIELD_TYPES.find(
-                  (t) => t.value === Number(editingField.answerType)
-                )?.icon ?? FileText}
               <div class="flex items-center gap-2">
-                <SelectedIcon class="h-4 w-4" />
                 {FIELD_TYPES.find(
                   (t) => t.value === Number(editingField.answerType)
                 )?.label ?? 'Select type'}
               </div>
-            {/snippet}
           </Select.Trigger>
           <Select.Content>
             {#each FIELD_TYPES as t}
               {@const Icon = t.icon}
               <Select.Item value={String(t.value)}>
-                {#snippet children()}
                   <div class="flex items-center gap-2">
                     <Icon class="h-4 w-4" />
                     {t.label}
                   </div>
-                {/snippet}
               </Select.Item>
             {/each}
           </Select.Content>
@@ -383,22 +374,18 @@
         <Label for="assessmentType">Assessment Type</Label>
         <Select.Root type="single" bind:value={editingField.assessmentType}>
           <Select.Trigger class="w-full">
-            {#snippet children()}
               <div class="flex items-center gap-2">
                 <ClipboardList class="h-4 w-4" />
                 <span>{editingField.assessmentType}</span>
               </div>
-            {/snippet}
           </Select.Trigger>
           <Select.Content>
             {#each ASSESSMENT_TYPES as assessmentType}
               <Select.Item value={assessmentType}>
-                {#snippet children()}
                   <div class="flex items-center gap-2">
                     <ClipboardList class="h-4 w-4" />
                     <span>{assessmentType}</span>
                   </div>
-                {/snippet}
               </Select.Item>
             {/each}
           </Select.Content>
@@ -501,27 +488,19 @@
         <Label>Field Type</Label>
         <Select.Root type="single" bind:value={selectedFieldType}>
           <Select.Trigger class="w-full">
-            {#snippet children()}
-              {@const SelectedIcon =
-                FIELD_TYPES.find((t) => t.value === Number(selectedFieldType))
-                  ?.icon ?? FileText}
               <div class="flex items-center gap-2">
-                <SelectedIcon class="h-4 w-4" />
                 {FIELD_TYPES.find((t) => t.value === Number(selectedFieldType))
                   ?.label ?? 'Select type'}
               </div>
-            {/snippet}
           </Select.Trigger>
           <Select.Content>
             {#each FIELD_TYPES as t}
               {@const Icon = t.icon}
               <Select.Item value={String(t.value)}>
-                {#snippet children()}
                   <div class="flex items-center gap-2">
                     <Icon class="h-4 w-4" />
                     {t.label}
                   </div>
-                {/snippet}
               </Select.Item>
             {/each}
           </Select.Content>
@@ -532,22 +511,18 @@
         <Label for="assessmentType">Assessment Type</Label>
         <Select.Root type="single" bind:value={selectedAssessmentType}>
           <Select.Trigger class="w-full">
-            {#snippet children()}
               <div class="flex items-center gap-2">
                 <ClipboardList class="h-4 w-4" />
                 <span>{selectedAssessmentType}</span>
               </div>
-            {/snippet}
           </Select.Trigger>
           <Select.Content>
             {#each ASSESSMENT_TYPES as assessmentType}
               <Select.Item value={assessmentType}>
-                {#snippet children()}
                   <div class="flex items-center gap-2">
                     <ClipboardList class="h-4 w-4" />
                     <span>{assessmentType}</span>
                   </div>
-                {/snippet}
               </Select.Item>
             {/each}
           </Select.Content>

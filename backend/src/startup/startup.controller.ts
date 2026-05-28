@@ -59,6 +59,12 @@ export class StartupController {
     return await this.startupService.getAllStartups();
   }
 
+  @Get('/debug-evals')
+  async debugEvals() {
+    const conn = this.startupService['em'].getConnection();
+    return await conn.execute(`SELECT id, startup_id, composite_score, tier_label FROM readiness_evaluations`);
+  }
+
   // ==================================================
   // Deprecated endpoints - keeping for backward compatibility
   @Get('/ranking-by-urat')

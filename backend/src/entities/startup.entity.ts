@@ -21,6 +21,7 @@ import { CalculatorQuestionAnswer } from './calculator-question-answer.entity';
 import { StartupWaitlistMessage } from './startup-waitlist-message.entity';
 import { Recommendation } from './recommendation.entity';
 import { RagRetrievalLog } from './rag-retrieval-log.entity';
+import { ReadinessEvaluation } from './readiness-evaluation.entity';
 
 @Entity({ tableName: 'startups' })
 export class Startup {
@@ -88,4 +89,7 @@ export class Startup {
 
   @OneToMany(() => RagRetrievalLog, (log) => log.startup)
   ragRetrievalLogs = new Collection<RagRetrievalLog>(this);
+
+  @OneToMany(() => ReadinessEvaluation, (evaluation) => evaluation.startup)
+  readinessEvaluations = new Collection<ReadinessEvaluation>(this);
 }
