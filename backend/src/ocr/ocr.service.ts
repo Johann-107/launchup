@@ -24,7 +24,7 @@ export class OcrService {
         // dynamic import so app still runs if the package isn't installed yet
         const tesseract = await import('tesseract.js');
         const { createWorker } = tesseract;
-        const worker = createWorker();
+        const worker = await createWorker();
         await worker.load();
         await worker.loadLanguage('eng');
         await worker.initialize('eng');
