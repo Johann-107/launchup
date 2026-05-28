@@ -2,7 +2,8 @@
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
 
   export let data: { tiers: any[]; access: string };
   let tiers = data.tiers ?? [];
@@ -67,7 +68,7 @@
             <tr class="hover:bg-muted/50 group border-b transition-colors">
               <td class="px-6 py-4"><Input bind:value={t.tierLabel} /></td>
               <td class="px-6 py-4"><Input type="number" bind:value={t.threshold} /></td>
-              <td class="px-6 py-4"><Input bind:value={t.weights} placeholder='{"engagement":0.5}' /></td>
+              <td class="px-6 py-4"><Input bind:value={t.weights} placeholder={"{\"engagement\":0.5}"} /></td>
               <td class="px-6 py-4 text-right">
                 <button class="text-sm text-red-600" on:click={() => removeTier(i)}>Remove</button>
               </td>

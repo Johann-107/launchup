@@ -16,7 +16,8 @@
     Upload,
     ChevronRight
   } from 'lucide-svelte';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
   import { ASSESSMENT_TYPES } from '$lib/types/assessment.types';
   import { invalidateAll } from '$app/navigation';
 

@@ -198,8 +198,8 @@ export class OcrService {
     const nonAlphaRatio = textLength ? nonAlpha / textLength : 0;
     const newlineCount = (text.match(/\n/g) || []).length;
     const newlineRatio = textLength ? newlineCount / textLength : 0;
-    const words = (text.match(/\S+/g) || []);
-    const avgWordLen = words.length ? words.reduce((s: number, w: string) => s + w.length, 0) / words.length : 0;
+    const words = (text.match(/\S+/g) || []) as string[];
+    const avgWordLen = words.length ? words.reduce((s: number, w: string) => s + (w?.length || 0), 0) / words.length : 0;
     const repeatedNonAlphaSeqs = (text.match(/[^A-Za-z0-9\s]{4,}/g) || []).length;
 
     // Score components (higher -> more likely a sketch/diagram)
@@ -222,9 +222,14 @@ export class OcrService {
   // Optional Google Vision integration: returns label annotations if client available
   async detectWithVision(buffer: Buffer) {
     try {
-      const { ImageAnnotatorClient } = await import('@google-cloud/vision');
+      const vision: any = await import('@google-cloud/vision').catch(() => null);
+      if (!vision) {
+        this.logger.debug('Google Vision module not available');
+        return { labels: [] };
+      }
+      const { ImageAnnotatorClient } = vision;
       const client = new ImageAnnotatorClient();
-      const [result] = await client.labelDetection(buffer);
+      const [result] = await client.labelDetection(buffer as any);
       const labels = (result.labelAnnotations || []).map((l: any) => ({ description: l.description, score: l.score }));
       return { labels };
     } catch (err) {
@@ -235,17 +240,23 @@ export class OcrService {
 
   async detectTextWithVision(filePathOrBuffer: string | Buffer) {
     try {
-      const { ImageAnnotatorClient } = await import('@google-cloud/vision');
-      const client = new ImageAnnotatorClient();
-      let [result]: any;
-      if (Buffer.isBuffer(filePathOrBuffer)) {
-        [result] = await client.textDetection(filePathOrBuffer);
-      } else {
-        [result] = await client.textDetection(filePathOrBuffer);
+      const vision: any = await import('@google-cloud/vision').catch(() => null);
+      if (!vision) {
+        this.logger.debug('Google Vision module not available');
+        return { text: '', avgConfidence: undefined };
       }
-      const annotation = result.fullTextAnnotation || result.textAnnotations?.[0];
+      const { ImageAnnotatorClient } = vision;
+      const client = new ImageAnnotatorClient();
+      let result: any;
+      if (Buffer.isBuffer(filePathOrBuffer)) {
+        const res = await client.textDetection(filePathOrBuffer as Buffer);
+        result = res && res[0] ? res[0] : undefined;
+      } else {
+        const res = await client.textDetection(filePathOrBuffer as string);
+        result = res && res[0] ? res[0] : undefined;
+      }
+      const annotation = result?.fullTextAnnotation || result?.textAnnotations?.[0];
       const text = annotation ? (annotation.text || annotation.description || '') : '';
-      // avgConfidence is not always provided; leave undefined when not available
       return { text, avgConfidence: undefined };
     } catch (err) {
       this.logger.debug('detectTextWithVision failed', err?.message ?? err);

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
   import * as Dialog from '$lib/components/ui/dialog';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
 
   export let data: { ocrs: any[]; access: string };
   let ocrs = data.ocrs ?? [];

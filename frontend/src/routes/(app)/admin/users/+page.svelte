@@ -6,7 +6,8 @@
   import { Label } from '$lib/components/ui/label';
   import * as Select from '$lib/components/ui/select';
   import { Plus, Edit2, Trash2, Users, Loader2 } from 'lucide-svelte';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
 
   let { data } = $props<{ data: { users: Array<any>; access: string } }>();
   let users = $state(data.users);

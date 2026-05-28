@@ -56,7 +56,8 @@
   import Organizational from './application/Organizational.svelte';
   import TechnologyCalculator from './application/Calculator.svelte';
   import Waitlisted from './application/Waitlisted.svelte';
-  import { PUBLIC_API_URL } from '$env/static/public';
+  import { env } from '$env/dynamic/public';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
   import { ChevronLeft, ChevronRight, Check, Shield, FileText, ClipboardList, Cpu } from 'lucide-svelte';
 
   let data: any;
