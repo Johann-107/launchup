@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { EntityManager } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { AiMetricsService } from './ai-metrics.service';
+import { BaselineService } from './baseline.service';
 import { ConfigService } from '@nestjs/config';
 import { StartupReadinessLevel } from 'src/entities/startup-readiness-level.entity';
 import { Startup } from 'src/entities/startup.entity';
@@ -47,10 +48,25 @@ export class AiService {
   private readonly ai: GoogleGenAI;
   private readonly modelName = 'gemini-2.5-flash-lite';
 
-  constructor(private config: ConfigService, private metrics: AiMetricsService) {
+  constructor(
+    private config: ConfigService,
+    private metrics: AiMetricsService,
+    private baselineService: BaselineService,
+  ) {
     this.ai = new GoogleGenAI({
       apiKey: this.config.get<string>('GEMINI_API_KEY'),
     });
+  }
+
+  // Normalize numeric AI scores using the baseline service. Returns scaled value 1-9.
+  async normalizeAiScore(score: number) {
+    try {
+      const res = await this.baselineService.normalizeScore(score);
+      return res;
+    } catch (err) {
+      // on error return a conservative mapping
+      return { z: 0, scaled: Math.max(1, Math.min(9, Math.round(score))) };
+    }
   }
 
   private groundPrompt(prompt: string) {
@@ -217,13 +233,26 @@ export class AiService {
   async generateTasksFromPrompt(
     prompt: string,
   ): Promise<{ target_level: number; description: string }[]> {
-    return this.callAiExpectJson({
+    const tasks = await this.callAiExpectJson({
       prompt,
       schema: readinessTaskSchema,
       fallback: [],
       correctivePrompt:
         'The previous answer was invalid. Return only a JSON array where every item has an integer target_level and a description string.',
     });
+
+    // Normalize any numeric target_level fields using baseline
+    const normalized = await Promise.all(
+      tasks.map(async (t) => {
+        try {
+          const n = await this.baselineService.normalizeScore(Number(t.target_level));
+          return { ...t, target_level_normalized: n.scaled, target_level_z: n.z };
+        } catch (err) {
+          return { ...t, target_level_normalized: t.target_level };
+        }
+      }),
+    );
+    return normalized as any;
   }
 
   async generateInitiativesFromPrompt(prompt: string): Promise<
@@ -270,13 +299,26 @@ export class AiService {
   async generateRoadblocksFromPrompt(
     prompt: string,
   ): Promise<{ description: string; fix: string; riskNumber: number }[]> {
-    return this.callAiExpectJson({
+    const roadblocks = await this.callAiExpectJson({
       prompt,
       schema: readinessRoadblockSchema,
       fallback: [],
       correctivePrompt:
         'The previous answer was invalid. Return only a JSON array where every item has description and fix as strings and riskNumber as an integer.',
     });
+
+    const normalized = await Promise.all(
+      roadblocks.map(async (r) => {
+        try {
+          const n = await this.baselineService.normalizeScore(Number(r.riskNumber));
+          return { ...r, riskNumber_normalized: n.scaled, riskNumber_z: n.z };
+        } catch (err) {
+          return { ...r, riskNumber_normalized: r.riskNumber };
+        }
+      }),
+    );
+
+    return normalized as any;
   }
 
   async createBasePrompt(

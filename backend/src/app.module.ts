@@ -7,6 +7,7 @@ import { StartupModule } from './startup/startup.module';
 import { ReadinesslevelModule } from './readinesslevel/readinesslevel.module';
 import { ReadinessModule } from './readiness/readiness.module';
 import { AiModule } from './ai/ai.module';
+import { BaselineModule } from './ai/baseline.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ChatHistoryModule } from './chat_history/chat-history.module';
 import { AdminModule } from './admin/admin.module';
@@ -24,6 +25,7 @@ import { ProgressModule } from './progress/progress.module';
 import { OverviewModule } from './overview/overview.module';
 import { ElevateModule } from './elevate/elevate.module';
 import { AssessmentModule } from './assessment/assessment.module';
+import { OcrModule } from './ocr/ocr.module';
 import { UploadModule } from './upload/upload.module';
 
 @Module({
@@ -53,6 +55,8 @@ import { UploadModule } from './upload/upload.module';
     UploadModule,
     AdminModule,
     AssessmentModule,
+    OcrModule,
+    BaselineModule,
   ],
   providers: [AppService],
 })
