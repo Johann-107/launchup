@@ -233,12 +233,64 @@ export class StartupService {
       // include tesseract avg confidence when available
       var tesseractAvgConfidence = result.avgConfidence as number | undefined;
     } else {
-      const pdfParseModule = await import('pdf-parse');
-      const pdfParse = pdfParseModule.default as unknown as (
-        input: Buffer,
-      ) => Promise<{ text: string }>;
-      const result = await pdfParse(file.buffer);
-      parsedText = result.text || '';
+      try {
+        const pdfParseModule = await import('pdf-parse');
+        const pdfParseCandidate: any = pdfParseModule && (pdfParseModule.default ?? pdfParseModule);
+        let result: { text: string };
+        if (typeof pdfParseCandidate === 'function') {
+          result = await pdfParseCandidate(file.buffer);
+        } else if (pdfParseCandidate && typeof pdfParseCandidate.parseBuffer === 'function') {
+          result = await pdfParseCandidate.parseBuffer(file.buffer);
+        } else {
+          const alt = (pdfParseModule as any).default ?? pdfParseModule;
+          if (typeof alt === 'function') {
+            result = await alt(file.buffer);
+          } else {
+            throw new Error('Unsupported pdf-parse module shape');
+          }
+        }
+        parsedText = result.text || '';
+      } catch (err) {
+        console.error('pdf-parse failed:', err);
+
+        const failedReview = {
+          title: '',
+          startup_description: '',
+          problem_statement: '',
+          target_market: '',
+          solution_description: '',
+          objectives: '',
+          scope: '',
+          methodology: '',
+        };
+
+        const failedConfidence = Object.fromEntries(
+          Object.keys(failedReview).map((key) => [key, 'failed']),
+        ) as Record<string, 'verified' | 'low' | 'failed'>;
+
+        await this.em.persistAndFlush(
+          this.em.create(OcrDocument, {
+            originalFilename: file.originalname,
+            extractedText: '',
+            processingStatus: 'failed',
+            legibilityStatus: 'failed',
+            fieldConfidence: Object.fromEntries(
+              Object.entries(failedConfidence).map(([key, value]) => [key, value === 'verified' ? 1 : value === 'low' ? 0.5 : 0]),
+            ),
+            sourcePath: undefined,
+            createdAt: new Date(),
+          }),
+        );
+
+        return {
+          ...failedReview,
+          fieldConfidence: failedConfidence,
+          legibilityStatus: 'failed',
+          legibilityReason: err instanceof Error ? err.message : String(err),
+          imageWidth: null,
+          imageHeight: null,
+        };
+      }
     }
 
     const aiPayload = await this.aiService.getCapsuleProposalInfo(parsedText);
@@ -269,7 +321,15 @@ export class StartupService {
       }
     }
 
-    const parsedPayload = cleanPayload ? JSON.parse(cleanPayload) : {};
+    let parsedPayload: any = {};
+    if (cleanPayload) {
+      try {
+        parsedPayload = JSON.parse(cleanPayload);
+      } catch (err) {
+        console.error('Failed to parse AI payload for capsule proposal', err);
+        parsedPayload = {};
+      }
+    }
     const reviewFields = {
       title: parsedPayload.title ?? '',
       startup_description: parsedPayload.startup_description ?? '',
