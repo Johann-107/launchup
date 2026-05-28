@@ -57,16 +57,16 @@
           {#each audits as a}
             <tr class="hover:bg-muted/50 group border-b transition-colors">
               <td class="px-6 py-4 font-mono text-xs text-muted-foreground">{a.id}</td>
-              <td class="px-6 py-4">{a.entityType}#{a.entityId}</td>
-              <td class="px-6 py-4">{a.originalScore}</td>
+              <td class="px-6 py-4">{a.dimensionKey} (Startup #{a.startup?.id ?? 'Unknown'})</td>
+              <td class="px-6 py-4">{a.rawScore}</td>
               <td class="px-6 py-4">{a.correctedScore}</td>
               <td class="px-6 py-4">{a.biasFlagged ? 'Yes' : 'No'}</td>
               <td class="px-6 py-4 text-right">
                 {#if overridingId === a.id}
                   <input type="number" bind:value={overrideValue} class="mr-2" />
-                  <Button on:click={() => overrideAudit(a.id)} disabled={overriding}>{overriding ? 'Saving...' : 'Save'}</Button>
+                  <Button onclick={() => overrideAudit(a.id)} disabled={overriding}>{overriding ? 'Saving...' : 'Save'}</Button>
                 {:else}
-                  <Button on:click={() => { overridingId = a.id; overrideValue = a.correctedScore ?? a.originalScore; }}>Override</Button>
+                  <Button onclick={() => { overridingId = a.id; overrideValue = a.correctedScore ?? a.rawScore; }}>Override</Button>
                 {/if}
               </td>
             </tr>

@@ -246,7 +246,7 @@ export class AdminService {
 
   // AI bias audits
   async getBiasAudits(): Promise<AiBiasAudit[]> {
-    return this.em.find(AiBiasAudit, {}, { orderBy: { createdAt: 'DESC' } });
+    return this.em.find(AiBiasAudit, {}, { orderBy: { createdAt: 'DESC' }, populate: ['startup'] });
   }
 
   async overrideBiasAudit(id: number, payload: { correctedScore?: number; biasFlagged?: boolean; biasStatus?: string; justification?: string }) {
