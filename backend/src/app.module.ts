@@ -9,6 +9,7 @@ import { ReadinessModule } from './readiness/readiness.module';
 import { AiModule } from './ai/ai.module';
 import { BaselineModule } from './ai/baseline.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';   // added
 import { ChatHistoryModule } from './chat_history/chat-history.module';
 import { AdminModule } from './admin/admin.module';
 import { User } from './entities/user.entity';
@@ -28,6 +29,11 @@ import { AssessmentModule } from './assessment/assessment.module';
 import { OcrModule } from './ocr/ocr.module';
 import { UploadModule } from './upload/upload.module';
 
+// New entities and custom type
+import { Recommendation } from './entities/recommendation.entity';
+import { RagRetrievalLog } from './entities/rag-retrieval-log.entity';
+import { VectorEmbedding } from './entities/vector-embeddings.entity'; // if you plan to use it
+
 @Module({
   controllers: [AppController],
   imports: [
@@ -36,7 +42,16 @@ import { UploadModule } from './upload/upload.module';
     }),
     MikroOrmModule.forRoot(),
     MikroOrmModule.forFeature({
-      entities: [User, Startup, CapsuleProposal, UratQuestion, RnaChatHistory],
+      entities: [
+        User,
+        Startup,
+        CapsuleProposal,
+        UratQuestion,
+        RnaChatHistory,
+        Recommendation,        // new
+        RagRetrievalLog,        // new
+        VectorEmbedding,        // new (optional)
+      ],
     }),
     AiModule,
     AuthModule,
