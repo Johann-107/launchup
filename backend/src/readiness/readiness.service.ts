@@ -152,16 +152,38 @@ export class ReadinessService {
       dimensions.reduce((total, dimension) => total + dimension.weightedScore, 0),
     );
 
-    const tierLabel =
-      compositeScore >= 85
-        ? 'Strong'
-        : compositeScore >= 70
-          ? 'Ready'
-          : compositeScore >= 55
-            ? 'Emerging'
-            : compositeScore >= 40
-              ? 'Developing'
-              : 'Early';
+    // Try to load persisted tier thresholds from the database; fall back to defaults
+    const persisted = await this.em.find(TierConfig, {});
+    const sortedTiers = persisted.sort((a, b) => b.threshold - a.threshold);
+
+    let tierLabel = 'Early';
+    let tierThreshold = 25;
+    
+    if (sortedTiers.length > 0) {
+      // Fallback to lowest tier if score is below all thresholds
+      tierLabel = sortedTiers[sortedTiers.length - 1].tierLabel;
+      tierThreshold = sortedTiers[sortedTiers.length - 1].threshold;
+
+      for (const tier of sortedTiers) {
+        if (compositeScore >= tier.threshold) {
+          tierLabel = tier.tierLabel;
+          tierThreshold = tier.threshold;
+          break;
+        }
+      }
+    } else {
+      tierLabel =
+        compositeScore >= 85
+          ? 'Strong'
+          : compositeScore >= 70
+            ? 'Ready'
+            : compositeScore >= 55
+              ? 'Emerging'
+              : compositeScore >= 40
+                ? 'Developing'
+                : 'Early';
+      tierThreshold = compositeScore >= 85 ? 85 : compositeScore >= 70 ? 70 : compositeScore >= 55 ? 55 : compositeScore >= 40 ? 40 : 25;
+    }
 
     const recommendations = [...dimensions]
       .sort((left, right) => left.weightedScore - right.weightedScore)
@@ -192,31 +214,10 @@ export class ReadinessService {
     };
 
     try {
-      // Try to load persisted tier thresholds from the database; fall back to defaults
-      const persisted = await this.em.find(TierConfig, {});
-      
-      const sortedTiers = persisted.sort((a, b) => b.threshold - a.threshold);
-
-      let computedTierLabel = 'Pending';
-      let tierThreshold = 0;
-      if (sortedTiers.length > 0) {
-        for (const tier of sortedTiers) {
-          if (compositeScore >= tier.threshold) {
-            computedTierLabel = tier.tierLabel;
-            tierThreshold = tier.threshold;
-            break;
-          }
-        }
-      } else {
-        computedTierLabel =
-          compositeScore >= 85 ? 'Strong' : compositeScore >= 70 ? 'Ready' : compositeScore >= 55 ? 'Emerging' : compositeScore >= 40 ? 'Developing' : 'Early';
-        tierThreshold = compositeScore >= 85 ? 85 : compositeScore >= 70 ? 70 : compositeScore >= 55 ? 55 : compositeScore >= 40 ? 40 : 25;
-      }
-
       const evaluation = this.em.create(ReadinessEvaluation, {
         startup: startupId,
         compositeScore,
-        tierLabel: computedTierLabel,
+        tierLabel: tierLabel,
         isProvisional: dimensions.some((dimension) => dimension.score === 0),
         warning: dimensions.some((dimension) => dimension.score === 0)
           ? 'One or more readiness dimensions are missing, so the score should be treated as provisional.'
@@ -228,7 +229,6 @@ export class ReadinessService {
       this.em.persist(evaluation);
       await this.em.flush();
 
-      // Using computed tierThreshold from above
       for (const dimension of dimensions) {
         const gap = Math.max(0, tierThreshold - dimension.percent);
         this.em.persist(
