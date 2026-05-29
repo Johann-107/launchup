@@ -57,6 +57,8 @@
     };
   }
 
+  import { toast } from 'svelte-sonner';
+
   async function getInformation() {
     processing = true;
     if (!files || !files[0]) {
@@ -68,38 +70,46 @@
     const formData = new FormData();
     formData.append('capsuleProposal', files[0]);
 
-    const response = await fetch(
-      `${PUBLIC_API_URL}/startups/parse-capsule-proposal`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${access}`
-        },
-        body: formData
+    try {
+      const response = await fetch(
+        `${PUBLIC_API_URL}/startups/parse-capsule-proposal`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${access}`
+          },
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        information = {
+          title: data.title || '',
+          startup_description: data.startup_description || '',
+          problem_statement: data.problem_statement || '',
+          target_market: data.target_market || '',
+          solution_description: data.solution_description || '',
+          objectives: data.objectives || '',
+          scope: data.scope || '',
+          methodology: data.methodology || '',
+          fieldConfidence: data.fieldConfidence || {},
+          legibilityStatus: data.legibilityStatus || 'verified',
+          legibilityReason: data.legibilityReason || null,
+          sketchDetected: data.sketchDetected || false,
+          sketchConfidence: data.sketchConfidence || 0,
+        };
+      } else {
+        toast.error(data.message || 'Failed to process document. Please try again.');
+        resetUpload();
       }
-    );
-
-    const data = await response.json();
-
-    if (response.ok) {
-      information = {
-        title: data.title || '',
-        startup_description: data.startup_description || '',
-        problem_statement: data.problem_statement || '',
-        target_market: data.target_market || '',
-        solution_description: data.solution_description || '',
-        objectives: data.objectives || '',
-        scope: data.scope || '',
-        methodology: data.methodology || '',
-        fieldConfidence: data.fieldConfidence || {},
-        legibilityStatus: data.legibilityStatus || 'verified',
-        legibilityReason: data.legibilityReason || null,
-        sketchDetected: data.sketchDetected || false,
-        sketchConfidence: data.sketchConfidence || 0,
-      };
+    } catch (err) {
+      toast.error('Network error occurred while processing document.');
+      resetUpload();
+    } finally {
+      processing = false;
     }
-
-    processing = false;
   }
 
   function resetUpload() {
