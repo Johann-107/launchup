@@ -106,8 +106,10 @@ export class StartupController {
     try {
       return await this.startupService.parseCapsuleProposal(file);
     } catch (error) {
-      console.error(error);
-      throw new Error('Failed to process capsule proposal');
+      const { Logger } = require('@nestjs/common');
+      new Logger('StartupController').error('Failed to process capsule proposal: ' + (error.stack || error));
+      const { InternalServerErrorException } = require('@nestjs/common');
+      throw new InternalServerErrorException(error.message || 'Failed to process capsule proposal');
     }
   }
 

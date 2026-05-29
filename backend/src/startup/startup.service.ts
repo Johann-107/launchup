@@ -229,11 +229,35 @@ export class StartupService {
     }
 
     let parsedText = '';
+    let tesseractAvgConfidence: number | undefined;
+    let aiPayload: string | null | undefined = null;
+
     if (file.mimetype.startsWith('image/')) {
-      const result = await this.ocrService.parseBuffer(file.buffer) as any;
-      parsedText = result.text || '';
-      // include tesseract avg confidence when available
-      var tesseractAvgConfidence = result.avgConfidence as number | undefined;
+      // PRIMARY PATH: Send image directly to Gemini Vision for OCR + extraction
+      // This gives far superior results for handwritten documents compared to Tesseract
+      try {
+        aiPayload = await this.aiService.getCapsuleProposalInfoFromImage(
+          file.buffer,
+          file.mimetype,
+        );
+        console.log('[OCR] Gemini Vision direct extraction result:', aiPayload?.substring(0, 200));
+      } catch (err) {
+        console.error('[OCR] Gemini Vision extraction failed, falling back to Tesseract:', err);
+      }
+
+      // Also run Tesseract in parallel for raw text logging and sketch detection
+      try {
+        const result = await this.ocrService.parseBuffer(file.buffer) as any;
+        parsedText = result.text || '';
+        tesseractAvgConfidence = result.avgConfidence as number | undefined;
+      } catch {
+        // Tesseract failure is non-critical since we have Gemini Vision
+      }
+
+      // If Gemini Vision failed, fall back to Tesseract text + AI text extraction
+      if (!aiPayload && parsedText) {
+        aiPayload = await this.aiService.getCapsuleProposalInfo(parsedText);
+      }
     } else {
       try {
         const pdfParseModule = await import('pdf-parse');
@@ -293,9 +317,11 @@ export class StartupService {
           imageHeight: null,
         };
       }
+
+      // For PDFs, use the text-based AI extraction
+      aiPayload = await this.aiService.getCapsuleProposalInfo(parsedText);
     }
 
-    const aiPayload = await this.aiService.getCapsuleProposalInfo(parsedText);
     const cleanPayload = aiPayload
       ? aiPayload.replace(/^```json\s*/, '').replace(/\s*```$/, '')
       : '';
@@ -332,6 +358,12 @@ export class StartupService {
         parsedPayload = {};
       }
     }
+
+    // Use raw_transcription from Gemini Vision if available (better than Tesseract)
+    if (parsedPayload.raw_transcription && !parsedText) {
+      parsedText = parsedPayload.raw_transcription;
+    }
+
     const reviewFields = {
       title: parsedPayload.title ?? '',
       startup_description: parsedPayload.startup_description ?? '',

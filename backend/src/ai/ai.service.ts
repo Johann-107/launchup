@@ -369,6 +369,55 @@ export class AiService {
     return res.text;
   }
 
+  /**
+   * Send an image directly to Gemini's vision model for OCR + field extraction.
+   * This bypasses Tesseract entirely and gives far better results for handwritten documents.
+   */
+  async getCapsuleProposalInfoFromImage(imageBuffer: Buffer, mimeType: string) {
+    const base64Image = imageBuffer.toString('base64');
+    const res = await this.ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Image,
+              },
+            },
+            {
+              text: `${AI_GROUNDING_INSTRUCTION}
+
+You are an OCR expert. Carefully read ALL text in this image — whether typed or handwritten.
+
+Step 1: First, transcribe every word you can see in the image verbatim.
+Step 2: Then extract structured information into these fields:
+- title: The project/proposal title
+- startup_description: Description of the startup
+- problem_statement: The problem statement
+- target_market: The target market
+- solution_description: The proposed solution
+- objectives: The objectives
+- scope: The scope of the proposal
+- methodology: Methodology and expected outputs
+
+If a field is not found in the image, provide a reasonable summary based on other visible information (e.g. startup name, dates, funding amounts).
+If the image only contains partial information (like a cover page), fill in what you can and leave the rest as empty strings.
+
+IMPORTANT: Return ONLY valid JSON with no markdown formatting, no code blocks, no extra text.
+JSON format: {"title": "", "startup_description": "", "problem_statement": "", "target_market": "", "solution_description": "", "objectives": "", "scope": "", "methodology": "", "raw_transcription": ""}
+
+Put the full verbatim transcription of all text in the image into the "raw_transcription" field.`,
+            },
+          ],
+        },
+      ],
+    });
+    return res.text;
+  }
+
   async generateStartupAnalysisSummary(
     dto: StartupApplicationDto,
   ): Promise<string> {
