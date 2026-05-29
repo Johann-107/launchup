@@ -147,7 +147,7 @@
   }
 </script>
 
-<div class="flex-1 overflow-auto px-1" class:hidden={currentStep !== stepName}>
+<div class="flex-1 min-h-0 overflow-auto px-1" class:hidden={currentStep !== stepName}>
   <div class="flex flex-col gap-5">
     <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-2">
