@@ -109,7 +109,13 @@ export class StartupController {
       const { Logger } = require('@nestjs/common');
       new Logger('StartupController').error('Failed to process capsule proposal: ' + (error.stack || error));
       const { InternalServerErrorException } = require('@nestjs/common');
-      throw new InternalServerErrorException(error.message || 'Failed to process capsule proposal');
+      
+      let errorMessage = error.message || 'Failed to process capsule proposal';
+      if (errorMessage.includes('429 Too Many Requests') || errorMessage.includes('quota')) {
+        errorMessage = 'AI quota exceeded. The server is receiving too many requests. Please wait a minute and try again.';
+      }
+      
+      throw new InternalServerErrorException(errorMessage);
     }
   }
 
