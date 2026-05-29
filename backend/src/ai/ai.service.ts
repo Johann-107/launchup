@@ -388,28 +388,29 @@ export class AiService {
               },
             },
             {
-              text: `${AI_GROUNDING_INSTRUCTION}
+              text: `You are an expert document reader and startup proposal analyst. Carefully read ALL text in this image — whether typed or handwritten.
 
-You are an OCR expert. Carefully read ALL text in this image — whether typed or handwritten.
+Step 1: Transcribe every word you can see in the image verbatim into the "raw_transcription" field.
 
-Step 1: First, transcribe every word you can see in the image verbatim.
-Step 2: Then extract structured information into these fields:
-- title: The project/proposal title
-- startup_description: Description of the startup
-- problem_statement: The problem statement
-- target_market: The target market
-- solution_description: The proposed solution
-- objectives: The objectives
-- scope: The scope of the proposal
-- methodology: Methodology and expected outputs
+Step 2: Extract or intelligently infer ALL of the following fields. Use every clue in the image — project title, startup name, dates, funding amounts, duration, any keywords — to generate meaningful content for EVERY field:
 
-If a field is not found in the image, provide a reasonable summary based on other visible information (e.g. startup name, dates, funding amounts).
-If the image only contains partial information (like a cover page), fill in what you can and leave the rest as empty strings.
+- title: The project/proposal title (use the project title or startup name from the image)
+- startup_description: A description of the startup. If not explicitly written, compose a brief description using the startup name, project title, funding requested, date established, and any other visible details.
+- problem_statement: The problem the startup is trying to solve. If not explicitly written, infer from the project title/description what problem this startup likely addresses.
+- target_market: Who the startup serves. If not explicitly written, infer a likely target market based on the startup name and project context.
+- solution_description: What solution the startup proposes. If not explicitly written, infer a plausible solution based on the project title and available context.
+- objectives: The goals of the proposal. If not explicitly written, generate reasonable objectives like securing funding, developing the product, reaching target market, etc. based on the funding amount and duration visible.
+- scope: The scope of the proposal. If not explicitly written, generate a reasonable scope based on the project duration, funding, and title.
+- methodology: The methodology and expected outputs. If not explicitly written, generate a reasonable methodology based on the project duration and context.
 
-IMPORTANT: Return ONLY valid JSON with no markdown formatting, no code blocks, no extra text.
-JSON format: {"title": "", "startup_description": "", "problem_statement": "", "target_market": "", "solution_description": "", "objectives": "", "scope": "", "methodology": "", "raw_transcription": ""}
+CRITICAL RULES:
+- NEVER leave any field as an empty string. Every field MUST have meaningful content.
+- Use all visible information (dates, amounts, names, durations) to make each field as specific and relevant as possible.
+- Write in a professional, formal tone suitable for a startup acceleration proposal.
+- Each field should have at least 40 characters of content.
 
-Put the full verbatim transcription of all text in the image into the "raw_transcription" field.`,
+IMPORTANT: Return ONLY valid JSON with no markdown formatting, no code blocks, no backticks, no extra text before or after the JSON.
+JSON format: {"title": "", "startup_description": "", "problem_statement": "", "target_market": "", "solution_description": "", "objectives": "", "scope": "", "methodology": "", "raw_transcription": ""}`,
             },
           ],
         },
